@@ -55,9 +55,9 @@ public class KVStore implements KVCommInterface {
 		outputStream.write(request);
 		outputStream.flush();
 
-		
-
 		// call receive message that will read KVMessage returned by the server.
+		receiveMessage();
+		
 		return null;
 	}
 
@@ -72,6 +72,10 @@ public class KVStore implements KVCommInterface {
 		outputStream.write(request);
 		outputStream.flush();
 		return null;
+	}
+	
+	private void receiveMessage(){
+		
 	}
 
 	
