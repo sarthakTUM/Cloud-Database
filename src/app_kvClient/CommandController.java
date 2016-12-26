@@ -3,6 +3,7 @@ package app_kvClient;
 import java.util.HashMap;
 
 import app_kvClient.Response.ResponseResult;
+import app_kvClient.Response.ResponseSource;
 
 public class CommandController {
 
@@ -21,7 +22,7 @@ public class CommandController {
 		validCommand.put("DISCONNECT", "SERVER");
 	}
 	
-	public CommandModel buildCommand(String cmdLine){
+	public static CommandModel buildCommand(String cmdLine){
 		
 		CommandModel commandModel = null;
 		CommandFactory commandFactory = new CommandFactory();
@@ -32,12 +33,9 @@ public class CommandController {
 		// if the command is available in valid commands
 		if(validCommand.containsKey(tokens[0].toUpperCase())){
 			commandModel = commandFactory.getCommand(tokens[0].toUpperCase(), validCommand.get(tokens[0].toUpperCase()), tokens);
+			System.out.println(LOG + "class of commandModel returned by command factory: " + commandModel.getClass().getSimpleName());
 		}
-		else{
-			// TODO handle else case, if command is not presnt in the validCommands.
-		}
-		
-		System.out.println(LOG + "class of commandModel returned by command factory: " + commandModel.getClass().getSimpleName());
+		// else case is handled in updateView()
 		return commandModel;
 	}
 	
@@ -48,7 +46,9 @@ public class CommandController {
 		
 		this.command = command;
 		this.view = view;
-		System.out.println(LOG + "calling constructor with: " + command.getClass().getSimpleName() + " " + view.getClass().getSimpleName());
+		if(command != null){
+			System.out.println(LOG + "calling constructor with: " + command.getClass().getSimpleName() + " " + view.getClass().getSimpleName());
+		}
 		
 	}
 	
@@ -56,6 +56,13 @@ public class CommandController {
 		// check validity of command using polymorphic method
 		System.out.println(LOG + "in initProcessing()");
 		System.out.println(LOG + "Type of command : " + this.command.getClass().getSimpleName());
+		
+		/*
+		 * TODO implement checkSystem() function to verify whether the system state is
+		 * suitable for completing the command.
+		 */
+		//response = checkSystemState(command);
+		
 		response = this.command.checkValidity();
 		System.out.println(LOG + "Command validity: " + response.getResponseResult());
 		
@@ -65,7 +72,16 @@ public class CommandController {
 			System.out.println(LOG + "MessageHandler class : " + messageHandler.getClass().getSimpleName());
 			
 			// process command using handler.
-			messageHandler.processCommand(command);
+			response = messageHandler.processCommand(command);
+			
+			// if command is processed correctly, receive message from client's input stream.
+			/*if(response.getResponseResult() == ResponseResult.SUCCESS){
+				//response = messageHandler.receieveMessage();
+			}*/
+			
+			/*
+			 * TODO if the response of receieve is success, process it.
+			 */
 		}
 		else{
 			// TODO handle else case
@@ -75,6 +91,9 @@ public class CommandController {
 	
 	public void updateView(){
 		// TODO get KVMessage from handler and pass it to printResponse
+		if(this.command == null){
+			response = new Response(ResponseSource.CLIENT, ResponseResult.FAIL, "Invalid Command entered, please enter the command again");
+		}
 		view.printResponse(response);
 		
 		// TODO define printResponse(Response)

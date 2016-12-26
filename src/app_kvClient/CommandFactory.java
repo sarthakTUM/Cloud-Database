@@ -7,9 +7,10 @@ public class CommandFactory {
 	 */
 	private static final String LOG = "LOG:COMDFCTY:";
 	public CommandModel getCommand(String command, String commandType, String[] tokens){
-		
-		System.out.println(LOG + "command factory building with: " + command + " " + commandType + " " + tokens.length);
+
 		CommandModel commandModel = null;
+		System.out.println(LOG + "command factory building with: " + command + " " + commandType + " " + tokens.length);
+
 		switch(commandType){
 		case "SERVER":
 			ServerCommand serverCommand = new ServerCommand();
@@ -20,6 +21,8 @@ public class CommandFactory {
 			commandModel = serverCommand;
 			break;
 		}
+
+
 		return commandModel;
 	}
 }

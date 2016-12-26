@@ -14,7 +14,9 @@ public class Response {
 	private ResponseSource responseSource;
 	private ResponseResult responseResult;
 	
-	
+	public Response(){
+		
+	}
 	public Response(ResponseSource responseSource, ResponseResult responseResult, String responseMessage){
 		this.responseMessage = responseMessage;
 		this.responseResult = responseResult;
@@ -45,4 +47,5 @@ public class Response {
 		this.responseResult = responseResult;
 		this.responseSource = responseSource;
 	}
+	
 }

@@ -21,12 +21,16 @@ public class KVClient {
 			stdin = new BufferedReader(new InputStreamReader(System.in));
 			System.out.print(PROMPT);
 			CommandModel command = buildCommand(stdin);
-			System.out.println(LOG + "class of command after building to check polymorphism: " + command.getClass().getSimpleName());
-			
+			if(command != null){
+				System.out.println(LOG + "class of command after building to check polymorphism: " + command.getClass().getSimpleName());
+			}
+				
 			// TODO spawning a new thread for each command is better?
 			CommandController cmdController = new CommandController(command, clientView);
-			cmdController.initProcessing();
-			cmdController.updateView();
+			if(command != null){
+				cmdController.initProcessing();
+			}
+			cmdController.updateView();		
 		}
 	}
 	
@@ -35,10 +39,7 @@ public class KVClient {
 		try {
 			String cmdLine = stdin.readLine();
 			System.out.println(LOG + "cmdLine : " + cmdLine);
-			command = new CommandController().buildCommand(cmdLine);
-			System.out.println(LOG + "command type : " + command.getClass().getSimpleName());
-			return command;
-			
+			command = CommandController.buildCommand(cmdLine);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
