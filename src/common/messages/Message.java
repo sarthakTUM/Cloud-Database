@@ -39,6 +39,7 @@ public class Message implements Serializable{
 	}
 	
 	private void addCtrChars(String stringifyPayload){
+		// TODO the value might also contain spaces.
 		this.stringifyPayload = stringifyPayload.replace(" ", ctrSeparator);
 		this.stringifyPayload.concat(String.valueOf(ctrEOM));
 	}

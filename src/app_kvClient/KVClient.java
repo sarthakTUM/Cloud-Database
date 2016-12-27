@@ -4,18 +4,28 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import app_kvClient.ClientSystem.SystemState;
+
 
 public class KVClient {
 
+	ClientSystem clientSystem = new ClientSystem();
 	private boolean stop = false;
 	private static final String PROMPT = "EchoClient> ";
 	private BufferedReader stdin;
 	private ClientView clientView = new ClientView();
 	private final static String LOG = "LOG:KVCLIENT:";
 	
+	
 	private void run(){
+		clientSystem.initialize();
+		if(clientSystem.isValidTransition(new State(SystemState.READY))){
+			System.out.println(LOG + "system is in valid state for transition to ready");
+			CommandController.initializeCommands();
+			clientSystem.updateState();
+			System.out.println(LOG + "system state after init commands: " + clientSystem.getCurrState());
+		}
 		
-		CommandController.initializeCommands();
 		System.out.println(LOG + "the valid commands [command=type] are : " + CommandController.getValidCommands());
 		while(!stop){
 			stdin = new BufferedReader(new InputStreamReader(System.in));
@@ -26,7 +36,7 @@ public class KVClient {
 			}
 				
 			// TODO spawning a new thread for each command is better?
-			CommandController cmdController = new CommandController(command, clientView);
+			CommandController cmdController = new CommandController(command, clientView, clientSystem);
 			if(command != null){
 				cmdController.initProcessing();
 			}
@@ -52,5 +62,6 @@ public class KVClient {
 		
 		System.out.println(LOG + "Running Client Application");
 		clientApp.run();
+	
 	}
 }

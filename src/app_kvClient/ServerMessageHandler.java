@@ -1,6 +1,6 @@
 package app_kvClient;
 
-import common.messages.KVMessage;
+//import common.messages.KVMessage;
 
 import app_kvClient.Response.ResponseResult;
 import app_kvClient.Response.ResponseSource;
@@ -18,7 +18,7 @@ public class ServerMessageHandler extends Handler{
 	private static KVStore kvStore;
 	public Response processCommand(CommandModel serverCommand){
 		Response response = null;
-		KVMessage kvMessage;
+		//KVMessage kvMessage;
 		System.out.println(LOG + "Command Model Class: " + serverCommand.getClass().getSimpleName());
 		switch(serverCommand.getCommandInstruction()){
 		case "CONNECT":
@@ -41,7 +41,7 @@ public class ServerMessageHandler extends Handler{
 			System.out.println(LOG + "executing PUT: " + key + "-" + value);
 			try {
 				/*
-				 * TODO receive KVMessage and based on the status, excecute proper action.
+				 * TODO receive KVMessage and based on the status, build a response. execute proper action.
 				 */
 				kvStore.put(key, value);
 				//kvMessage.getStatus();
@@ -54,7 +54,7 @@ public class ServerMessageHandler extends Handler{
 			break;
 		case "GET":
 			/*
-			 * TODO receive KVMessage and based on the status, execute proper action.
+			 * TODO receive KVMessage and based on the status, build a response, execute proper action.
 			 */
 			key = serverCommand.getCommandAttributes()[1];
 			try {
@@ -68,6 +68,7 @@ public class ServerMessageHandler extends Handler{
 			break;
 		case "DISCONNECT":
 			kvStore.disconnect();
+			break;
 			
 			default:
 				// TODO error message

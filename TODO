@@ -1,0 +1,10 @@
+1. add global class for system validity check. (Finite State Machine)
+2. receive message from server, deserialize it and get a KVMessage.
+3. based on KVMessage, perform appropriate actions by client.
+4. Handle Client Commands like help, loglevel and quit
+5. implement logging.
+6. handle unhandled exceptions.
+7. Think of a better Payload (something like HTTP) and a better serialization Message.
+
+CURRENT:
+commandController, updating initProcessing() to check system state of the command returned. 
