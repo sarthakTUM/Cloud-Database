@@ -7,15 +7,23 @@ public class ServerContainerModel {
 	
 	String Delimiter;//the delimiter of the metadata
 	
-	private void add(ServerModel NewNode)
+	public void add(ServerModel NewNode)
 	{
 		this.ServerList.add(NewNode);
 	}// appends a node to the serverList array
-	private void remove(int Index)
+	public void remove(int Index)
 	{
 		this.ServerList.remove(Index);
 	}//remove a node at an arbitary position, 
-	private String stringify()
+	public ServerModel getServerByIndex(int Index)
+	{
+		return this.ServerList.get(Index);
+	}
+	public int count()
+	{
+		return ServerList.size();
+	}
+	public String stringify()
 	{StringBuilder builder = new StringBuilder();
 	for (int ctr=0; ctr<this.ServerList.size(); ctr++)	
 	{
@@ -51,7 +59,7 @@ public class ServerContainerModel {
 	}
 	return builder.toString();
 	}// converts the serverList object into a metadata format for passing to server, delimited with the specified delimiter
-	private void sortHash()
+	public void sortHash()
 	{
 		Collections.sort(this.ServerList, new Comparator<ServerModel>() {
 	        @Override
@@ -78,7 +86,7 @@ Integer i = new Integer(Server1.getHashValue());
 		return response;
 	}//returns true if the serverList is already sorted in ascending order
 
-	private void prepareMetaData()
+	public void prepareMetaData()
 	{if(isSorted()==true)
 	{
 		for (int ctr=0; ctr<this.ServerList.size(); ctr++)	
