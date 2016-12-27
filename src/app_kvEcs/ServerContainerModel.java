@@ -1,25 +1,25 @@
-import java.util.*;
-package app_kvEcs;
 
+package app_kvEcs;
+import java.util.*;
 
 public class ServerContainerModel {
 	private List<ServerModel> ServerList = new ArrayList<ServerModel>();
 	
 	String Delimiter;//the delimiter of the metadata
 	
-	private boolean add(ServerModel NewNode)
+	private void add(ServerModel NewNode)
 	{
 		this.ServerList.add(NewNode);
 	}// appends a node to the serverList array
-	private boolean remove(int Index)
+	private void remove(int Index)
 	{
 		this.ServerList.remove(Index);
 	}//remove a node at an arbitary position, 
 	private String stringify()
-	{
+	{StringBuilder builder = new StringBuilder();
 	for (int ctr=0; ctr<this.ServerList.size(); ctr++)	
 	{
-		StringBuilder builder = new StringBuilder();
+		
 		ServerModel Temp= ServerList.get(ctr);
 		if(Temp.getName()!=null)
 		{
@@ -47,10 +47,11 @@ public class ServerContainerModel {
 		builder.append(",");
 		}
          builder.append("\n");
-         return builder.toString();
+         
 	}
+	return builder.toString();
 	}// converts the serverList object into a metadata format for passing to server, delimited with the specified delimiter
-	private boolean sortHash()
+	private void sortHash()
 	{
 		Collections.sort(this.ServerList, new Comparator<ServerModel>() {
 	        @Override
@@ -58,23 +59,36 @@ public class ServerContainerModel {
 	        {
 
 Integer i = new Integer(Server1.getHashValue()); 
-	            return  i.compareTo(Server2.getHashValue();
+	            return  i.compareTo(Server2.getHashValue());
 	        }
 	    });
 	}//sorts the serverList as per the hash value
 
 	private boolean isSorted()
-	{
-		
+	{Boolean response=true;
+		for (int ctr=0; ctr<this.ServerList.size()-1; ctr++)	
+		{
+			if(this.ServerList.get(ctr).getHashValue()<this.ServerList.get(ctr+1).getHashValue())
+			{}
+			else
+			{
+				response=false;
+			}
+		}
+		return response;
 	}//returns true if the serverList is already sorted in ascending order
 
 	private void prepareMetaData()
+	{if(isSorted()==true)
 	{
 		for (int ctr=0; ctr<this.ServerList.size(); ctr++)	
 		{
-		 
+			int StartIndex=(ctr==0) ? 0 :this.ServerList.get(ctr-1).getHashValue();// assign 0 for first node, else assign the hash value of previous node
+			int EndIndex=(ctr==this.ServerList.size()-1) ? Integer.MAX_VALUE :this.ServerList.get(ctr).getHashValue()-1;// assign maxval if last node, else assign the computed hash value
+			this.ServerList.get(ctr).setStartIndex(StartIndex);
+			this.ServerList.get(ctr).setEndIndex(EndIndex);
 		}
     }//populates beginning index and end index, if isSORTED() function returns true;
-
+	}
 	//getters and setters for serverList
 }
