@@ -17,6 +17,7 @@ public class KVStore implements KVCommInterface {
 	private Socket clientSocket;
 	private InputStream inputStream;
 	private OutputStream outputStream;
+	private ClientSocketListener clientSocketListener;
 	/**
 	 * Initialize KVStore with address and port of KVServer
 	 * @param address the address of the KVServer
@@ -35,6 +36,8 @@ public class KVStore implements KVCommInterface {
 		clientSocket = new Socket(serverAddress, serverPort);
 		inputStream = clientSocket.getInputStream();
 		outputStream = clientSocket.getOutputStream();
+		clientSocketListener = new ClientSocketListener(clientSocket);
+		clientSocketListener.start();
 	}
 
 	@Override
@@ -56,9 +59,12 @@ public class KVStore implements KVCommInterface {
 		outputStream.flush();
 
 		// call receive message that will read KVMessage returned by the server.
-		receiveMessage();
+		payload = receiveMessage();
 		
-		return null;
+		/*
+		 * TODO check if the source of the payload is SERVER then only return it. 
+		 */
+		return payload;
 	}
 
 	@Override
@@ -71,11 +77,17 @@ public class KVStore implements KVCommInterface {
 
 		outputStream.write(request);
 		outputStream.flush();
-		return null;
+		
+		payload = receiveMessage();
+		
+		/*
+		 * TODO check if the payload is from SERVER before returning.
+		 */
+		return payload;
 	}
 	
-	private void receiveMessage(){
-		
+	private Payload receiveMessage(){
+		return clientSocketListener.getPayload();
 	}
 
 	

@@ -1,10 +1,22 @@
 1. add global class for system validity check. (Finite State Machine)
+	1.1. Just implement remaining states.
+	1.2 Based on response from ServerMessageHandler, update state.
 2. receive message from server, deserialize it and get a KVMessage.
+	2.1 Create a Payload based on msgBytes
 3. based on KVMessage, perform appropriate actions by client.
+	3.1 Handle cases in ServerMEssageHandler
 4. Handle Client Commands like help, loglevel and quit
 5. implement logging.
 6. handle unhandled exceptions.
 7. Think of a better Payload (something like HTTP) and a better serialization Message.
+	7.1 This should work fine as of now.
+8. Store a metadata file for the client, which will have server IP and ranges. Update the file if 
+   it contacted wrong node, and retry the request with correct node.
+	8.1 Covered in Case handling of ServerMessageHandler.
 
 CURRENT:
-commandController, updating initProcessing() to check system state of the command returned. 
+1. update
+
+ISSUES:
+1. for how much time does the input stream bytes remain intact. What if the read from KVStore
+is called after another round of while(isRunning) is invoked, will the payload become null, or remain there.

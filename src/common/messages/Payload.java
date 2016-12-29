@@ -6,6 +6,7 @@ public class Payload implements KVMessage{
 	private String requestType;
 	private String key;
 	private String value;
+	private StatusType statusType;
 	
 	public Payload(String key, String value, String requestType){
 		System.out.println(LOG + "creating payload in constructor with <K,V,T>" + key + ":" + value + ":" + requestType);
@@ -14,6 +15,11 @@ public class Payload implements KVMessage{
 		this.requestType = requestType;
 	}
 	
+	public Payload(byte[] messageBytes){
+		/*
+		 * TODO construct a payload with the received bytes.
+		 */
+	}
 	@Override
 	public String getKey() {
 		// TODO Auto-generated method stub
@@ -29,7 +35,7 @@ public class Payload implements KVMessage{
 	@Override
 	public StatusType getStatus() {
 		// TODO Auto-generated method stub
-		return null;
+		return this.statusType;
 	}
 	
 	public void setKey(String key){
@@ -47,5 +53,8 @@ public class Payload implements KVMessage{
 		return this.requestType;
 	}
 	
+	public void setStatusType(StatusType statusType){
+		this.statusType = statusType;
+	}
 
 }

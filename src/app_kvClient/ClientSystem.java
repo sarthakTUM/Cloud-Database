@@ -36,6 +36,7 @@ public class ClientSystem {
 	Condition init = new Condition("initTrue");
 	Condition cmdReady = new Condition("cmdInit");
 	Condition connect = new Condition("connectionSuccess");
+	Condition request = new Condition("requestSent");
 
 
 	public void initialize(){
@@ -45,6 +46,7 @@ public class ClientSystem {
 		transitions.add(new Transition(running, new HashSet<>(Arrays.asList(init)), initialized));
 		transitions.add(new Transition(initialized, new HashSet<>(Arrays.asList(cmdReady)), ready));
 		transitions.add(new Transition(ready, new HashSet<>(Arrays.asList(connect)), connected));
+		transitions.add(new Transition(connected, new HashSet<>(Arrays.asList(request)), timedWait));
 
 		stateMachine = new StateMachine(initialized, transitions);
 		
@@ -93,6 +95,7 @@ public class ClientSystem {
 		case CLOSED:
 			break;
 		case CONNECTED:
+			stateMachine.apply(new HashSet<>(Arrays.asList(request)));
 			break;
 		case DISCONNECTED:
 			break;
@@ -100,6 +103,7 @@ public class ClientSystem {
 			stateMachine.apply(new HashSet<>(Arrays.asList(cmdReady)));
 			break;
 		case READY:
+			stateMachine.apply(new HashSet<>(Arrays.asList(connect)));
 			break;
 		case RUNNING:
 			break;

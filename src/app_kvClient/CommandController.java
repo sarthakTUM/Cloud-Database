@@ -86,14 +86,18 @@ public class CommandController {
 				// process command using handler.
 				response = messageHandler.processCommand(command);
 				
-				// if command is processed correctly, receive message from client's input stream.
-				/*if(response.getResponseResult() == ResponseResult.SUCCESS){
-					//response = messageHandler.receieveMessage();
-				}*/
-				
 				/*
-				 * TODO if the response of receieve is success, process it.
+				 * TODO update system state, based on response.
 				 */
+				if(response.getResponseResult() == ResponseResult.SUCCESS){
+					/*
+					 * TODO update the updateState() function to accept a group 
+					 * 		of conditions and flag dictating whether the group
+					 * 		was successful or not.
+					 */
+					clientSystem.updateState();
+				}
+
 			}
 			else{
 				// TODO handle else case
