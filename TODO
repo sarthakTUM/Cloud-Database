@@ -15,7 +15,7 @@
 	8.1 Covered in Case handling of ServerMessageHandler.
 
 CURRENT:
-1. update
+1. implement Metadata update function in ServerMessageHandler.
 
 ISSUES:
 1. for how much time does the input stream bytes remain intact. What if the read from KVStore

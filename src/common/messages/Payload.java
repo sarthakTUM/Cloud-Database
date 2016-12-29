@@ -7,6 +7,7 @@ public class Payload implements KVMessage{
 	private String key;
 	private String value;
 	private StatusType statusType;
+	private String source;
 	
 	public Payload(String key, String value, String requestType){
 		System.out.println(LOG + "creating payload in constructor with <K,V,T>" + key + ":" + value + ":" + requestType);
@@ -55,6 +56,12 @@ public class Payload implements KVMessage{
 	
 	public void setStatusType(StatusType statusType){
 		this.statusType = statusType;
+	}
+	public void setSource(String source){
+		this.source = source;
+	}
+	public String getSource(){
+		return this.source;
 	}
 
 }
