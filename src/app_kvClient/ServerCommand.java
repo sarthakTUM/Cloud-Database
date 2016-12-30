@@ -13,9 +13,9 @@ public class ServerCommand extends CommandModel {
 	public ServerCommand(){
 		
 	}
-	public ServerCommand(String messageType, Handler handler, String[] commandAttributes, String commandInstruction){
-		super(messageType, handler, commandAttributes, commandInstruction);
-		System.out.println(LOG + "constructor called with: " + messageType + " " + handler.getClass().getSimpleName() + " " + commandAttributes.toString() + commandInstruction);
+	public ServerCommand(String messageType, Handler handler, String[] commandAttributes, String commandInstruction, String commandSource){
+		super(messageType, handler, commandAttributes, commandInstruction, commandSource);
+		System.out.println(LOG + "constructor called with: " + messageType + " " + handler.getClass().getSimpleName() + " " + commandAttributes.toString() + commandInstruction + " " + commandSource);
 	}
 	public Response checkValidity(){
 		

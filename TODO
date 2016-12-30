@@ -16,7 +16,17 @@
 
 CURRENT:
 1. implement Metadata update function in ServerMessageHandler.
+2. Complete Metadata class : read inner classes and complete ServerConfig class that contains server
+attributes like Port, BegIndex, endIndex, etc. - done
+3. Think of a better RETRY workflow, else, think of processCommand() recursion response.
 
 ISSUES:
 1. for how much time does the input stream bytes remain intact. What if the read from KVStore
 is called after another round of while(isRunning) is invoked, will the payload become null, or remain there.
+2. Can PUT command be issued before CONNECT. The client doesnt know KEY and VALUE at time of connect, so
+CONNECT will be issued to a random server. Instead, should PUT issue an internal connect command for
+the respective server first?
+3. Why can't server itself retry the connect request based on the metadata file it has? Why is it sending
+the metadata back to Client? Client should just be receiving the answer.
+4. If a value is updated inside a recursive call, does it persist when backtracking, or is rolled
+to recursive value in previous recursion stack, i.e., the original one?

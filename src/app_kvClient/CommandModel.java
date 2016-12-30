@@ -6,16 +6,18 @@ public class CommandModel {
 	private String[] commandAttributes;
 	private Handler handler;
 	private String messageType;
+	private String messageSource;
 	
 	public CommandModel(){
 		
 	}
 	
-	public CommandModel(String messageType, Handler handler, String[] commandAttributes, String commandInstruction){
+	public CommandModel(String messageType, Handler handler, String[] commandAttributes, String commandInstruction, String messageSource){
 		this.setMessageType(messageType);
 		this.setHandler(handler);
 		this.setCommandInstruction(commandInstruction);
 		this.setCommandAttributes(commandAttributes);
+		this.setMessageSource(messageSource);
 	}
 
 	public Response checkValidity(){
@@ -49,5 +51,11 @@ public class CommandModel {
 	}
 	public void setHandler(Handler handler) {
 		this.handler = handler;
+	}
+	public void setMessageSource(String messageSource){
+		this.messageSource = messageSource;
+	}
+	public String getMessageSource(){
+		return this.messageSource;
 	}
 }

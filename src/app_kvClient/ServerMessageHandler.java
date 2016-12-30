@@ -2,11 +2,12 @@ package app_kvClient;
 
 //import common.messages.KVMessage;
 
-import common.messages.KVMessage;
-
 import app_kvClient.Response.ResponseResult;
 import app_kvClient.Response.ResponseSource;
+import app_kvServer.ServerModel;
 import client.KVStore;
+import client.Metadata;
+import common.messages.KVMessage;
 
 public class ServerMessageHandler extends Handler{
 
@@ -70,7 +71,35 @@ public class ServerMessageHandler extends Handler{
 						response = new Response(ResponseSource.SERVER, ResponseResult.SUCCESS, "PUT request successful. Tuple updated : " + key + ":" + value);
 						break;
 					case SERVER_NOT_RESPONSIBLE:
-						updateMetadataFile(kvMessage);
+						
+						/*
+						 * TODO retry workflow:
+						 * 1. Disconnect from old server
+						 * 2. update metadata file
+						 * 3. find new server
+						 * 4. processCommand() with connect to new server
+						 * 5. PUT to new server
+						 */
+						
+						boolean isUpdated = Metadata.updateMetadata(fetchMetadata(kvMessage));
+						if(isUpdated){
+							ServerModel serverConfig = Metadata.findServer(key);
+							/*
+							 * initiate a new PUT request with this serverConfig.
+							 */
+							if(serverConfig != null){
+								/*
+								 * TODO call processCommand() with a new ServerCommand of connect
+								 */
+								response = processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{serverConfig.getIP(), String.valueOf(serverConfig.getPort())}, "CONNECT", "SERVER"));
+								if(response.getResponseResult() == ResponseResult.SUCCESS){
+									/*
+									 * TODO call processCommand() with a new PUT command
+									 */
+									processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{key, value}, "PUT", "SERVER"));
+								}
+							}
+						}
 						break;
 					case SERVER_STOPPED:
 						break;
@@ -112,6 +141,12 @@ public class ServerMessageHandler extends Handler{
 		return response;
 	}
 	
+	private byte[] fetchMetadata(KVMessage kvMessage){
+		/*
+		 * TODO fetch optinalField from the payload
+		 */
+		return null;
+	}
 	public boolean updateMetadataFile(KVMessage kvMessage){
 		
 		boolean isUpdated = false;

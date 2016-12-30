@@ -2,12 +2,14 @@ package app_kvClient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 public class ClientSystem {
 
 	private static final String LOG = "LOG:CLNTSYST:";
+
 	public enum SystemState {
 		CLOSED,
 		RUNNING,
@@ -21,7 +23,7 @@ public class ClientSystem {
 	private StateMachine stateMachine;
 	public static boolean isInit;
 	public static boolean isCmdInit;
-
+	
 
 	State closed = new State(SystemState.CLOSED);
 	State running = new State(SystemState.RUNNING);

@@ -18,6 +18,7 @@ public class CommandFactory {
 			serverCommand.setMessageType(commandType.toUpperCase());
 			serverCommand.setHandler(new ServerMessageHandler());
 			serverCommand.setCommandAttributes(tokens);
+			serverCommand.setMessageSource("CLIENT");
 			commandModel = serverCommand;
 			break;
 		}
