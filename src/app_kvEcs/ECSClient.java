@@ -48,18 +48,21 @@ private static ServerContainerModel ActiveServerList;
 	    	        }
 }
 	   
-	   private static void processMessage(){
+	   private static void processMessage(ECSCommandModel command){
 
 			if(returntokens.length > 0){
 
 				//Logging.FILE_LOGGER.debug("Number of tokens greater than 0");
 				setCommand(tokens[0]);
 				String returnCommand = getCommand().toLowerCase();
-				switch(returnCommand){
-
+				switch(command.getInstruction()){
+				case "initkvservice":
+					//check if command has the cache size and strategy parameters
+					initKVService(command.getParameters()[1],command.getParameters()[2],command.getParameters()[3]);
+				break;
 				case "start":
 					start();
-					//initService(2, 10, "fifo");
+					
 					//sendData("", returnCommand);
 					break;
 					
@@ -75,10 +78,11 @@ private static ServerContainerModel ActiveServerList;
 					
 				break;
 				case "remove":
+					
 					break;
 				
 			}
-				private static boolean initService(int numberOfNodes, int cacheSize, String displacementStrategy) {
+				private static boolean initKVService(int numberOfNodes, int cacheSize, String displacementStrategy) {
 					
 					//Initialize ActiveServerList BY randomly selected nodes (without replacement) from FullServerList
 					List<Integer> numbersList = IntStream.rangeClosed(1,FullServerList.count()).boxed().collect(Collectors.toList());
@@ -100,6 +104,7 @@ private static ServerContainerModel ActiveServerList;
 					//
 					return true;
 				}
+				
 				private static void sendData(String data, String command){
 					
 					String[][] temp = getsData();
