@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -19,6 +20,7 @@ import java.util.stream.IntStream;
 public class ECSClient {
 	
 private static ServerContainerModel FullServerList;
+private static String metadata;
 private static ServerContainerModel ActiveServerList;
 	   public static void main(String[] args) throws IOException, NoSuchAlgorithmException 
 	   {
@@ -58,43 +60,79 @@ private static ServerContainerModel ActiveServerList;
 				switch(command.getInstruction()){
 				case "initkvservice":
 					//check if command has the cache size and strategy parameters
-					initKVService(command.getParameters()[1],command.getParameters()[2],command.getParameters()[3]);
+					initKVService(Integer.parseInt(command.getParameters()[1]),Integer.parseInt(command.getParameters()[2]),command.getParameters()[3]);
 				break;
 				case "start":
-					start();
 					
-					//sendData("", returnCommand);
+					
+					sendData(command);
 					break;
 					
 				case "stop":
-					sendData("", returnCommand);
+					sendData(command);
 					
 					break;
 				
 				case "shutdown":
-					sendData("", returnCommand);
+					sendData(command);
 				break;
 				case "add":
+					boolean uniqueServerFound= false;
+					boolean serverAlreadyExists=true;
 					
+					//handle condition when activeserver is already same as fullserverList
+					while(uniqueServerFound!=true)
+					{
+					Random rn = new Random();
+					int randomIndex=rn.nextInt(FullServerList.count());
+					
+					for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
+					{
+						if(ActiveServerList.getServerByIndex(ctr).getName()==FullServerList.getServerByIndex(randomIndex).getName())
+						{
+							serverAlreadyExists=true;
+							break;
+						}
+						
+					}
+					if(serverAlreadyExists!=true)
+					{
+					uniqueServerFound=true;
+					}
+					
+					}
+					
+					ServerModel Servernode = new ServerModel();
+					
+					String cacheSize=command.getParameters()[1];
+					String cacheStrategy=command.getParameters()[2];
+					ActiveServerList.add());
+					sendData(command);
 				break;
 				case "remove":
+					Random rn = new Random();
+					int randomIndex=rn.nextInt(ActiveServerList.count());
+					ActiveServerList.remove(randomIndex);
+					ActiveServerList.prepareMetaData();
+					metadata=ActiveServerList.stringify();
+					
 					
 					break;
 				
 			}
-				private static boolean initKVService(int numberOfNodes, int cacheSize, String displacementStrategy) {
+				private static boolean initKVService(int NumberofNodes, int cacheSize, String displacementStrategy) {
 					
 					//Initialize ActiveServerList BY randomly selected nodes (without replacement) from FullServerList
 					List<Integer> numbersList = IntStream.rangeClosed(1,FullServerList.count()).boxed().collect(Collectors.toList());
 					Collections.shuffle(numbersList);
-					for(int i=0; i<numberOfNodes; i++)
+					for(int i=0; i<; i++)
 					{
 						ActiveServerList.add(FullServerList.getServerByIndex(i));
 					}
 					//end
 					
 					//Launch ssh for each of the nodes in the ActiveServerList
-					for(int i=0; i<numberOfNodes; i++)
+					for(int i=0; i<; i++)
 					{//takes parameters as ip,port,cachestrategy,size and launches ssh
 						ServerModel Temp = ActiveServerList.getServerByIndex(i);
 						SSHPublicKeyAuthentication.sshConnection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
