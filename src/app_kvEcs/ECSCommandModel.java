@@ -24,10 +24,13 @@ public class ECSCommandModel {
 		super();
 		String[] temp=instruction.split(" ");
 		
-		this.Instruction =(temp.length>0)?temp[0]:"";
-		this.parameters[0] = (temp.length>1)?temp[1]:"";
-		this.parameters[1] = (temp.length>2)?temp[2]:"";
-		this.parameters[2] = (temp.length>3)?temp[3]:"";
+		for(int ctr	=0;ctr<temp.length;ctr++)
+		{
+			if(ctr==0) this.Instruction=temp[ctr];
+			else this.parameters[ctr-1]=temp[ctr];
+				
+		}
+		
 	}
 	public String getInstruction() {
 		return Instruction;

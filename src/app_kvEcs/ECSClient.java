@@ -79,29 +79,33 @@ private static ServerContainerModel ActiveServerList;
 				case "add":
 					boolean uniqueServerFound= false;
 					boolean serverAlreadyExists=true;
-					
-					//handle condition when activeserver is already same as fullserverList
-					while(uniqueServerFound!=true)
-					{
-					Random rn = new Random();
-					int randomIndex=rn.nextInt(FullServerList.count());
-					
-					for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
-					{
-						if(ActiveServerList.getServerByIndex(ctr).getName()==FullServerList.getServerByIndex(randomIndex).getName())
+					if(ActiveServerList.count()<FullServerList.count())
+					{//handle condition when activeserver is already same as fullserverList
+						while(uniqueServerFound!=true)
 						{
-							serverAlreadyExists=true;
-							break;
-						}
+							Random rn = new Random();
+							int randomIndex=rn.nextInt(FullServerList.count());
+					
+								for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
+								{
+									if(ActiveServerList.getServerByIndex(ctr).getName()==FullServerList.getServerByIndex(randomIndex).getName())
+									{
+										serverAlreadyExists=true;
+										break;
+									}
+						
+								}
+								if(serverAlreadyExists!=true)
+								{
+									uniqueServerFound=true;
+								}
 						
 					}
-					if(serverAlreadyExists!=true)
-					{
-					uniqueServerFound=true;
-					}
-					
-					}
-					
+						else
+						{
+						//set view to display, that server already exists	
+						}
+						}
 					ServerModel Servernode = new ServerModel();
 					
 					String cacheSize=command.getParameters()[1];

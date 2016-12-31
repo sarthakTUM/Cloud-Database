@@ -8,6 +8,8 @@ public class ServerModel {
 private String Name;
 private String IP;
 private int Port;
+private int cacheSize;
+private String cacheStrategy;
 private int HashValue;
 private int StartIndex, EndIndex;
 
@@ -64,6 +66,13 @@ public int getPort() {
  */
 public void setPort(int port) {
 	Port = port;
+}
+
+public String getCacheStrategy() {
+	return cacheStrategy;
+}
+public void setCacheStrategy(String cacheStrategy) {
+	this.cacheStrategy = cacheStrategy;
 }
 /**
  * @return the hashValue
