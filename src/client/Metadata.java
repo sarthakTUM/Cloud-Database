@@ -20,7 +20,7 @@ public class Metadata {
 		/*
 		 * TODO find the appropriate server from metadata using this key.
 		 * 		and return the value mapped to that key
-		 * 		1. Iterate through map metadataFile/
+		 * 		1. Iterate through map metadataFile
 		 * 		2. Compare key with the ranges of the servers
 		 * 		3. For appropriate server, return the ServerModel, i.e., the value associated with that key.
 		 */
