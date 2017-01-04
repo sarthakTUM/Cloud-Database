@@ -79,6 +79,8 @@ private static ServerContainerModel ActiveServerList;
 				case "add":
 					boolean uniqueServerFound= false;
 					boolean serverAlreadyExists=true;
+					int uniqueServerIndex;
+					
 					if(ActiveServerList.count()<FullServerList.count())
 					{//handle condition when activeserver is already same as fullserverList
 						while(uniqueServerFound!=true)
@@ -98,19 +100,27 @@ private static ServerContainerModel ActiveServerList;
 								if(serverAlreadyExists!=true)
 								{
 									uniqueServerFound=true;
+									uniqueServerIndex= randomIndex;
 								}
 						
+						}
+						
+						}
+					else
+					{
+					//set view to display, that server already exists and dont execute the logic below
 					}
-						else
-						{
-						//set view to display, that server already exists	
-						}
-						}
-					ServerModel Servernode = new ServerModel();
 					
-					String cacheSize=command.getParameters()[1];
+                     //assuming the add command is like add 10 LIFO
+					int cacheSize=Integer.parseInt(command.getParameters()[1]);
 					String cacheStrategy=command.getParameters()[2];
-					ActiveServerList.add());
+					ServerModel serverNode = new ServerModel(FullServerList.getServerByIndex(uniqueServerIndex));
+					serverNode.setCacheSize(cacheSize);
+					serverNode.setCacheStrategy(cacheStrategy);
+					ActiveServerList.add(serverNode);
+					ActiveServerList.prepareMetaData();
+					//setHashCode(),//set 
+					
 					sendData(command);
 				break;
 				case "remove":

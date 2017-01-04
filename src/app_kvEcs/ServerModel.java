@@ -13,6 +13,14 @@ private String cacheStrategy;
 private int HashValue;
 private int StartIndex, EndIndex;
 
+public ServerModel(ServerModel server) {
+	
+	this.Name = server.getName();
+	this.IP = server.getIP();
+	this.Port = server.getPort();
+
+}
+
 public ServerModel(String name, String iP, int port) {
 	
 	this.Name = name;
@@ -73,6 +81,13 @@ public String getCacheStrategy() {
 }
 public void setCacheStrategy(String cacheStrategy) {
 	this.cacheStrategy = cacheStrategy;
+}
+public int getCacheSize() {
+	return cacheSize;
+}
+
+public void setCacheSize(int cacheSize) {
+	this.cacheSize = cacheSize;
 }
 /**
  * @return the hashValue
