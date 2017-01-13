@@ -23,7 +23,7 @@ public class ECSCommandModel {
 	public ECSCommandModel(String instruction) {
 		super();
 		String[] temp=instruction.split(" ");
-		
+		parameters = new String[temp.length];
 		for(int ctr	=0;ctr<temp.length;ctr++)
 		{
 			if(ctr==0) this.Instruction=temp[ctr];

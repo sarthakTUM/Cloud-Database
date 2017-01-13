@@ -1,4 +1,8 @@
 package app_kvEcs;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+
+import common.messages.Manager;
 
 /**
  * @author Anant
@@ -13,27 +17,29 @@ private String cacheStrategy;
 private int HashValue;
 private int StartIndex, EndIndex;
 
-public ServerModel(ServerModel server) {
+public ServerModel(ServerModel server) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 	
 	this.Name = server.getName();
 	this.IP = server.getIP();
 	this.Port = server.getPort();
+	this.HashValue=Manager.hash(IP+Port);
 
 }
 
-public ServerModel(String name, String iP, int port) {
+public ServerModel(String name, String iP, int port) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 	
 	this.Name = name;
 	this.IP = iP;
 	this.Port = port;
+	this.HashValue=Manager.hash(IP+Port);
 
 }
-public ServerModel(String name, String iP, int port, int hashValue, int startIndex, int endIndex) {
+public ServerModel(String name, String iP, int port, int startIndex, int endIndex) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 	
 	this.Name = name;
 	this.IP = iP;
 	this.Port = port;
-	this.HashValue = hashValue;
+	this.HashValue = Manager.hash(IP+Name);
 	this.StartIndex = startIndex;
 	this.EndIndex = endIndex;
 }

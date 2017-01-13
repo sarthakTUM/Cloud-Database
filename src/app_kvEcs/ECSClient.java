@@ -19,15 +19,15 @@ import java.util.stream.IntStream;
 
 public class ECSClient {
 	
-private static ServerContainerModel FullServerList;
+private static ServerContainerModel FullServerList = new ServerContainerModel();
 private static String metadata;
-private static ServerContainerModel ActiveServerList;
+private static ServerContainerModel ActiveServerList= new ServerContainerModel();
 	   public static void main(String[] args) throws IOException, NoSuchAlgorithmException 
 	   {
 	    	
 	    	String sCurrentLine;
 	    	System.out.println(new File(".").getAbsolutePath());
-	    	BufferedReader br = new BufferedReader(new FileReader("ecs.config"));
+	    	BufferedReader br = new BufferedReader(new FileReader("ecsconfig.txt"));
 	    	StringBuilder builder = new StringBuilder();
 	    	while ((sCurrentLine = br.readLine()) != null) {
 	    			builder.append(sCurrentLine);
@@ -35,28 +35,41 @@ private static ServerContainerModel ActiveServerList;
 	    	}
 	    			StringBuilder metabuilder = new StringBuilder();
 	    	 
-	    	        String result= builder.toString();
+	    	        String result= builder.toString();  
 	    	        
 	    	        String[] rows = result.split("\n");
-	    	        
+	    	       
 	    	        for (int i = 0; i < rows.length; i++) {
 	    	        
 	    	        	String[] columns = rows[i].split(" ");
+	    	        	
 	    	        	FullServerList.add(new ServerModel(columns[0],columns[1],Integer.parseInt(columns[2])));
 	    	        	
 	    	       
 	    	       
 	    	        
 	    	        }
+	    	        initKVService(2, 10, "lifo");
+	    	        System.out.println(ActiveServerList.getServerByIndex(0).getName()+ActiveServerList.getServerByIndex(0).getHashValue());
+	    	        System.out.println(ActiveServerList.getServerByIndex(1).getName()+ActiveServerList.getServerByIndex(1).getHashValue());
+	    	       ActiveServerList.sortHash();
+	    	       ActiveServerList.prepareMetaData();
+	    	       System.out.println(ActiveServerList.stringify());
+	    	       ActiveServerList.remove(0);
+					ActiveServerList.prepareMetaData();
+					System.out.println(ActiveServerList.stringify());
+	    	        
+	    	        //processMessage(new ECSCommandModel("add 11 lifo"));
+	    	        
 }
 	   
-	   private static void processMessage(ECSCommandModel command){
+	   private static void processMessage(ECSCommandModel command) throws NoSuchAlgorithmException, UnsupportedEncodingException{
 
-			if(returntokens.length > 0){
+			
 
 				//Logging.FILE_LOGGER.debug("Number of tokens greater than 0");
-				setCommand(tokens[0]);
-				String returnCommand = getCommand().toLowerCase();
+				
+				
 				switch(command.getInstruction()){
 				case "initkvservice":
 					//check if command has the cache size and strategy parameters
@@ -79,12 +92,13 @@ private static ServerContainerModel ActiveServerList;
 				case "add":
 					boolean uniqueServerFound= false;
 					boolean serverAlreadyExists=true;
-					int uniqueServerIndex;
-					
+					int uniqueServerIndex=0;
+					System.out.println(ActiveServerList.count());//TODOcheck if sorting is happening properly);
 					if(ActiveServerList.count()<FullServerList.count())
 					{//handle condition when activeserver is already same as fullserverList
 						while(uniqueServerFound!=true)
 						{
+							serverAlreadyExists=false;
 							Random rn = new Random();
 							int randomIndex=rn.nextInt(FullServerList.count());
 					
@@ -112,16 +126,25 @@ private static ServerContainerModel ActiveServerList;
 					}
 					
                      //assuming the add command is like add 10 LIFO
-					int cacheSize=Integer.parseInt(command.getParameters()[1]);
-					String cacheStrategy=command.getParameters()[2];
+					int cacheSize=Integer.parseInt(command.getParameters()[0]);
+					String cacheStrategy=command.getParameters()[1];
 					ServerModel serverNode = new ServerModel(FullServerList.getServerByIndex(uniqueServerIndex));
 					serverNode.setCacheSize(cacheSize);
 					serverNode.setCacheStrategy(cacheStrategy);
 					ActiveServerList.add(serverNode);
+					ActiveServerList.sortHash();//TODOcheck if sorting is happening properly
 					ActiveServerList.prepareMetaData();
-					//setHashCode(),//set 
+					System.out.println(ActiveServerList.stringify());
 					
-					sendData(command);
+					//check if preperation of metadata is happening properly
+					
+					//initKVService(serverNode);
+					
+				    //initialize the newly added server through overloaded call of iniKvservice 
+					//and call sendata() parsing the metadata as a parameter
+					
+					
+					//sendData(command);
 				break;
 				case "remove":
 					Random rn = new Random();
@@ -133,46 +156,66 @@ private static ServerContainerModel ActiveServerList;
 					
 					break;
 				
-			}
+			}}
 				private static boolean initKVService(int NumberofNodes, int cacheSize, String displacementStrategy) {
 					
 					//Initialize ActiveServerList BY randomly selected nodes (without replacement) from FullServerList
 					List<Integer> numbersList = IntStream.rangeClosed(1,FullServerList.count()).boxed().collect(Collectors.toList());
 					Collections.shuffle(numbersList);
-					for(int i=0; i<; i++)
+					System.out.println(numbersList.toString());
+					for(int i=0; i<NumberofNodes; i++)
 					{
-						ActiveServerList.add(FullServerList.getServerByIndex(i));
+						ActiveServerList.add(FullServerList.getServerByIndex(numbersList.get(i)-1));
+					}
+					for(int i=0; i<NumberofNodes; i++)
+					{
+						System.out.println(ActiveServerList.stringify());
 					}
 					//end
 					
 					//Launch ssh for each of the nodes in the ActiveServerList
-					for(int i=0; i<; i++)
+					for(int i=0; i<NumberofNodes; i++)
 					{//takes parameters as ip,port,cachestrategy,size and launches ssh
 						ServerModel Temp = ActiveServerList.getServerByIndex(i);
-						SSHPublicKeyAuthentication.sshConnection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
+						//SSHPublicKeyAuthentication.sshConnection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
 					}
 					//sendMetadata to all of the initialized nodes
-					sendData(metadata, "meta");
+					//
+					return true;
+				}
+				private static boolean initKVService(ServerModel server) 
+				{
+	
+					//takes parameters as ip,port,cachestrategy,size and launches ssh
+					
+					//SSHPublicKeyAuthentication.ssh Connection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
+					
+					//sendMetadata to all of the initialized nodes
+				
 					//
 					return true;
 				}
 				
-				private static void sendData(String data, String command){
+				private static void sendData(ECSCommandModel command){
 					
-					String[][] temp = getsData();
-
-					for(int i=0; i < numberofnodes;i++)
-					{
-						try {
-							KVStore.connect(temp[i][1], Integer.parseInt(temp[i][2]));
-							KVStore.put(command, data);
-							KVStore.disconnect();
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+					
+					
+				
+//						try 
+//						{
+//							KVStore.connect(temp[i][1], Integer.parseInt(temp[i][2]));
+//							KVStore.put(command, data);
+//							KVStore.disconnect();
+//						} catch (Exception e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
 					}
 			
 			}
-}
+
+	
+
+	
+
 			
