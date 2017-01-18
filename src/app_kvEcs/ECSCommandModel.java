@@ -19,7 +19,15 @@ public class ECSCommandModel {
 	private String messageType;
 	private String[] permittedInstructions ={"start","stop","shutdown","add","remove"};
 	private String[] permittedStrategies    ={"fifo","lifo"};
+	private String CompleteCommandString;
   
+	public String getCompleteCommandString() {
+		CompleteCommandString=Instruction+" "+Arrays.toString(parameters);
+		return CompleteCommandString;
+	}
+	public void setCompleteCommandString(String completeCommandString) {
+		CompleteCommandString = completeCommandString;
+	}
 	public ECSCommandModel(String instruction) {
 		super();
 		String[] temp=instruction.split(" ");

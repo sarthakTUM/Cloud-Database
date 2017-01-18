@@ -1,5 +1,7 @@
 
 package app_kvEcs;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class ServerContainerModel {
@@ -12,6 +14,21 @@ public class ServerContainerModel {
 	{
 		this.ServerList.add(NewNode);
 	}// appends a node to the serverList array
+	public void cnvMetaToServList(String Metadata) throws NumberFormatException, NoSuchAlgorithmException, UnsupportedEncodingException
+	{
+		String[] rows = Metadata.split("\n");
+		for (int i = 0; i < rows.length; i++) 
+		{
+	        
+        	String[] columns = rows[i].split(",");
+        	
+        	
+				this.ServerList.add(new ServerModel(columns[0],columns[1],Integer.parseInt(columns[2]),Integer.parseInt(columns[3]),Integer.parseInt(columns[4])));
+			
+				// TODO Auto-generated catch block
+				
+		}
+	}// converts metadata string to a servverlist object
 	public void remove(int Index)
 	{
 		this.ServerList.remove(Index);
@@ -19,6 +36,24 @@ public class ServerContainerModel {
 	public ServerModel getServerByIndex(int Index)
 	{
 		return this.ServerList.get(Index);
+	}
+	public  ServerContainerModel  getNextNnodes(String IP, int port, int NumberOfNodes )
+	{ServerContainerModel replicationServ = new ServerContainerModel();
+		//takes the Ip and port, and number as parameters to return a ServerContainerModel populated with the next N nodes, wraps around
+		// parsing the host and Ip for node 3, and the NumberOfNodes as 2, would return nodes 4 and 5, doing so for 4 would return 5 and 1. doing it for 5 would return 1 and 2
+		for(int ctr=0; ctr<this.ServerList.size();ctr++)
+		{
+			if(ServerList.get(ctr).getIP().equalsIgnoreCase(IP) && ServerList.get(ctr).getPort()==port )
+			{
+				for(int ctr2=1; ctr2<=NumberOfNodes; ctr2++)
+				{
+				int index1=(ctr+ctr2)%this.ServerList.size();
+				replicationServ.add(this.ServerList.get(index1));
+				}
+				
+			}
+	  }
+		return replicationServ;
 	}
 	public int count()
 	{
@@ -45,16 +80,16 @@ public class ServerContainerModel {
 		builder.append(Temp.getPort());
 		builder.append(",");
 		}
-		//if(Temp.getStartIndex())
-		//{
+		if(Temp.getStartIndex()>=0)
+		{
 		builder.append(Temp.getStartIndex());
 		builder.append(",");
-		//}
-		//if(Temp.getEndIndex()>0)
-		//{
+		}
+		if(Temp.getEndIndex()>=0)
+		{
 		builder.append(Temp.getEndIndex());
 	
-		//}
+		}
         if(ctr<this.ServerList.size()-1)
         {
         		builder.append("\n");

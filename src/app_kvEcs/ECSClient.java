@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,18 +17,25 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import app_kvClient.CommandModel;
+import javafx.util.Pair;
+
 
 public class ECSClient {
-	
+//move these variables to another ecs handler class begin
+	static ECSState currentState;
+//end
 private static ServerContainerModel FullServerList = new ServerContainerModel();
 private static String metadata;
 private static ServerContainerModel ActiveServerList= new ServerContainerModel();
 	   public static void main(String[] args) throws IOException, NoSuchAlgorithmException 
 	   {
-	    	
+		  
+		   
+		   
 	    	String sCurrentLine;
 	    	System.out.println(new File(".").getAbsolutePath());
-	    	BufferedReader br = new BufferedReader(new FileReader("ecsconfig.txt"));
+	    	BufferedReader br = new BufferedReader(new FileReader("ecsconfig.config"));
 	    	StringBuilder builder = new StringBuilder();
 	    	while ((sCurrentLine = br.readLine()) != null) {
 	    			builder.append(sCurrentLine);
@@ -49,7 +57,8 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 	    	       
 	    	        
 	    	        }
-	    	        initKVService(2, 10, "lifo");
+	    	        initKVService(4, 10, "lifo");
+	    	       
 	    	        System.out.println(ActiveServerList.getServerByIndex(0).getName()+ActiveServerList.getServerByIndex(0).getHashValue());
 	    	        System.out.println(ActiveServerList.getServerByIndex(1).getName()+ActiveServerList.getServerByIndex(1).getHashValue());
 	    	       ActiveServerList.sortHash();
@@ -76,88 +85,123 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 					initKVService(Integer.parseInt(command.getParameters()[1]),Integer.parseInt(command.getParameters()[2]),command.getParameters()[3]);
 				break;
 				case "start":
+					start(command);
 					
 					
-					sendData(command);
 					break;
 					
 				case "stop":
-					sendData(command);
+					stop(command);
 					
-					break;
+					break; 
 				
 				case "shutdown":
-					sendData(command);
+					shutDown(command);
 				break;
 				case "add":
-					boolean uniqueServerFound= false;
-					boolean serverAlreadyExists=true;
-					int uniqueServerIndex=0;
-					System.out.println(ActiveServerList.count());//TODOcheck if sorting is happening properly);
-					if(ActiveServerList.count()<FullServerList.count())
-					{//handle condition when activeserver is already same as fullserverList
-						while(uniqueServerFound!=true)
-						{
-							serverAlreadyExists=false;
-							Random rn = new Random();
-							int randomIndex=rn.nextInt(FullServerList.count());
+					addRandomNode();
+					//TODOcheck if sorting is happening properly);
 					
-								for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
-								{
-									if(ActiveServerList.getServerByIndex(ctr).getName()==FullServerList.getServerByIndex(randomIndex).getName())
-									{
-										serverAlreadyExists=true;
-										break;
-									}
-						
-								}
-								if(serverAlreadyExists!=true)
-								{
-									uniqueServerFound=true;
-									uniqueServerIndex= randomIndex;
-								}
-						
-						}
-						
-						}
-					else
-					{
-					//set view to display, that server already exists and dont execute the logic below
-					}
-					
-                     //assuming the add command is like add 10 LIFO
-					int cacheSize=Integer.parseInt(command.getParameters()[0]);
-					String cacheStrategy=command.getParameters()[1];
-					ServerModel serverNode = new ServerModel(FullServerList.getServerByIndex(uniqueServerIndex));
-					serverNode.setCacheSize(cacheSize);
-					serverNode.setCacheStrategy(cacheStrategy);
-					ActiveServerList.add(serverNode);
-					ActiveServerList.sortHash();//TODOcheck if sorting is happening properly
-					ActiveServerList.prepareMetaData();
-					System.out.println(ActiveServerList.stringify());
-					
-					//check if preperation of metadata is happening properly
-					
-					//initKVService(serverNode);
-					
-				    //initialize the newly added server through overloaded call of iniKvservice 
-					//and call sendata() parsing the metadata as a parameter
-					
-					
-					//sendData(command);
 				break;
 				case "remove":
-					Random rn = new Random();
-					int randomIndex=rn.nextInt(ActiveServerList.count());
-					ActiveServerList.remove(randomIndex);
-					ActiveServerList.prepareMetaData();
-					metadata=ActiveServerList.stringify();
 					
-					
+					removeRandomNode();
 					break;
 				
 			}}
-				private static boolean initKVService(int NumberofNodes, int cacheSize, String displacementStrategy) {
+		private static void addRandomNode()
+		{boolean uniqueServerFound= false;
+		boolean serverAlreadyExists=true;
+		int uniqueServerIndex=0;
+		System.out.println(ActiveServerList.count());
+			if(ActiveServerList.count()<FullServerList.count())		
+			{//handle condition when activeserver is already same as fullserverList
+				while(uniqueServerFound!=true)
+				{
+					serverAlreadyExists=false;
+					Random rn = new Random();
+					int randomIndex=rn.nextInt(FullServerList.count());
+			
+						for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
+						{
+							if(ActiveServerList.getServerByIndex(ctr).getName()==FullServerList.getServerByIndex(randomIndex).getName())
+							{
+								serverAlreadyExists=true;
+								break;
+							}
+				
+						}
+						if(serverAlreadyExists!=true)
+						{
+							uniqueServerFound=true;
+							uniqueServerIndex= randomIndex;
+						}
+				
+				}
+				
+				}
+			else
+			{
+			System.out.println("No inactive servers remain in the ecs config");
+				//set view to display, that server already exists and dont execute the logic below
+			}
+			
+             //assuming the add command is like add 10 LIFO
+			
+		}
+		
+		private static void start(ECSCommandModel command)
+		{
+			for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
+			{
+				String Response=sendData(command, ActiveServerList.getServerByIndex(ctr));
+			
+			}
+		}
+		private static void stop(ECSCommandModel command)
+		{if(currentState==currentState.START && currentState!= currentState.SHUTDOWN)
+			{	
+				for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
+				{
+					String response=sendData(command, ActiveServerList.getServerByIndex(ctr));
+				System.out.println(response);
+				}
+				currentState=currentState.STOP;
+			}	
+		else{
+			
+			System.out.println("STOP incomplete, possibly because the system is already down or hasnt been started");
+		}
+		//TODO put a if condition to check if the stop was successful then set the state
+		
+		}
+		private static void shutDown(ECSCommandModel command)
+		{
+			if((currentState==currentState.START || currentState==currentState.STOP || currentState==currentState.INITIALIZED) && currentState!= currentState.SHUTDOWN)
+			{
+				for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
+				{
+					String response=sendData(command, ActiveServerList.getServerByIndex(ctr));
+				System.out.println(response);
+				}
+			//TODO put a if condition to check if the stop was successful then set the state otherwise throw an error
+			currentState=currentState.SHUTDOWN;
+		    }
+			else{
+				
+				System.out.println("SHUTDOWN incomplete, possibly because the system is already shut down or hasnt been started");
+			}
+		}
+		private static void removeRandomNode()
+		{
+			Random rn = new Random();
+			int randomIndex=rn.nextInt(ActiveServerList.count());
+			ActiveServerList.remove(randomIndex);
+			ActiveServerList.prepareMetaData();
+			metadata=ActiveServerList.stringify();
+			
+		}
+	   private static boolean initKVService(int NumberofNodes, int cacheSize, String displacementStrategy) {
 					
 					//Initialize ActiveServerList BY randomly selected nodes (without replacement) from FullServerList
 					List<Integer> numbersList = IntStream.rangeClosed(1,FullServerList.count()).boxed().collect(Collectors.toList());
@@ -196,26 +240,32 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 					return true;
 				}
 				
-				private static void sendData(ECSCommandModel command){
+				private static String sendData(ECSCommandModel command,ServerModel server)
+				{
+					//populate relevantServers with either the activeServerList(when doing masscommands like shutdown and start) or individual servers(when doing add/remove)
 					
-					
-					
-				
-//						try 
-//						{
-//							KVStore.connect(temp[i][1], Integer.parseInt(temp[i][2]));
-//							KVStore.put(command, data);
-//							KVStore.disconnect();
-//						} catch (Exception e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-					}
-			
+						try 
+						{
+							
+								ECSKVstore.connect(server.getIP(),server.getPort());
+								//TODOuse payload to send data instead of parsing via a string like right now
+								ECSKVstore.put(command.getCompleteCommandString());
+								 
+								//TODO remember to flush the response string so previous responses dont get repeated
+								ECSKVstore.disconnect();
+								
+								
+						}
+							 	catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+						}
+						
+			return "returnresponse";
 			}
 
 	
 
 	
-
+}
 			

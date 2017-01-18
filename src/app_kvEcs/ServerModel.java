@@ -30,7 +30,7 @@ public ServerModel(String name, String iP, int port) throws NoSuchAlgorithmExcep
 	
 	this.Name = name;
 	this.IP = iP;
-	this.Port = port;
+	this.Port = port;  
 	this.HashValue=Manager.hash(IP+Port);
 
 }
