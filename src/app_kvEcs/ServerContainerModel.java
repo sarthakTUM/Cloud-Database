@@ -37,6 +37,33 @@ public class ServerContainerModel {
 	{
 		return this.ServerList.get(Index);
 	}
+	public ServerModel getServerByPortAndIP(String IP,int Port)
+	{
+		// parsing the host and Ip for node 3, and the NumberOfNodes as 2, would return nodes 4 and 5, doing so for 4 would return 5 and 1. doing it for 5 would return 1 and 2
+				for(int ctr=0; ctr<this.ServerList.size();ctr++)
+				{
+					if(ServerList.get(ctr).getIP().equalsIgnoreCase(IP) && ServerList.get(ctr).getPort()==port )
+					{
+						return getServerByIndex(ctr);
+					}
+				
+				}
+		return null;
+	}
+	public  ServerModel  getPreviousNode(String IP, int port )
+	{
+		//takes the Ip and port, and number as parameters to return a ServerContainerModel populated with the next N nodes, wraps around
+		// parsing the host and Ip for node 3, and the NumberOfNodes as 2, would return nodes 4 and 5, doing so for 4 would return 5 and 1. doing it for 5 would return 1 and 2
+		for(int ctr=0; ctr<this.ServerList.size();ctr++)
+		{
+			if(ServerList.get(ctr).getIP().equalsIgnoreCase(IP) && ServerList.get(ctr).getPort()==port )
+			{
+				return getServerByIndex(ctr-1);
+				
+			}
+	  }
+		return null;
+	}
 	public  ServerContainerModel  getNextNnodes(String IP, int port, int NumberOfNodes )
 	{ServerContainerModel replicationServ = new ServerContainerModel();
 		//takes the Ip and port, and number as parameters to return a ServerContainerModel populated with the next N nodes, wraps around
