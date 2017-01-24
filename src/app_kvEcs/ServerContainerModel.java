@@ -4,6 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
+import common.messages.Manager;
+
 public class ServerContainerModel {
 	private List<ServerModel> ServerList = new ArrayList<ServerModel>();//be
 	//private List<ServerModel> preSortedServerList= new ArrayList<ServerModel>();//before the sorting happens
@@ -77,6 +79,17 @@ public class ServerContainerModel {
 			}
 	  }
 		return null;
+	}
+	public ServerModel getResponsibleServer(String key)
+	{ int hashedKey=Manager.hash(key);
+		for(int ctr=0; ctr<this.ServerList.size();ctr++)
+		{
+			if(ServerList.get(ctr).getStartIndex()<= hashedKey && ServerList.get(ctr).getEndIndex()>=hashedKey )
+			{
+				return getServerByIndex(ctr);
+				
+			}
+	  }
 	}
 	public  ServerContainerModel  getNextNnodes(String IP, int port, int NumberOfNodes )
 	{ServerContainerModel replicationServ = new ServerContainerModel();

@@ -20,8 +20,10 @@ import java.util.stream.IntStream;
 import app_kvClient.CommandModel;
 import javafx.util.Pair;
 
-
+import app_kvServer.CacheSys;
+import app_kvServer.CacheFIFO2;
 public class ECSClient {
+	
 //move these variables to another ecs handler class begin
 	static ECSState currentState;
 //end
@@ -58,6 +60,15 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 	    	        
 	    	        }
 	    	        initKVService(4, 10, "lifo");
+	    	
+	    	      
+	    	       CacheSys obj2= new CacheSys("FIFO",10);
+	    	       obj2.put("a", "b");
+	    	       
+	    	       System.out.println(obj2.get("a")+obj2.get("c"));
+	    	       
+	    	       
+	    	       
 	    	       
 	    	        System.out.println(ActiveServerList.getServerByIndex(0).getName()+ActiveServerList.getServerByIndex(0).getHashValue());
 	    	        System.out.println(ActiveServerList.getServerByIndex(1).getName()+ActiveServerList.getServerByIndex(1).getHashValue());

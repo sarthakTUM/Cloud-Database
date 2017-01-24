@@ -22,7 +22,7 @@ public class ECSCommandModel {
 	private String CompleteCommandString;
   
 	public String getCompleteCommandString() {
-		CompleteCommandString=Instruction+" "+Arrays.toString(parameters);
+		CompleteCommandString=Instruction+" "+Arrays.toString(parameters);//TODO ensure there is space seperating these parameters
 		return CompleteCommandString;
 	}
 	public void setCompleteCommandString(String completeCommandString) {
