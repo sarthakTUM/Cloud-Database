@@ -42,7 +42,7 @@ public class ServerContainerModel {
 		// parsing the host and Ip for node 3, and the NumberOfNodes as 2, would return nodes 4 and 5, doing so for 4 would return 5 and 1. doing it for 5 would return 1 and 2
 				for(int ctr=0; ctr<this.ServerList.size();ctr++)
 				{
-					if(ServerList.get(ctr).getIP().equalsIgnoreCase(IP) && ServerList.get(ctr).getPort()==port )
+					if(ServerList.get(ctr).getIP().equalsIgnoreCase(IP) && ServerList.get(ctr).getPort()==Port)
 					{
 						return getServerByIndex(ctr);
 					}

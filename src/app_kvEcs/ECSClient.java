@@ -40,7 +40,7 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 	    	while ((sCurrentLine = br.readLine()) != null) {
 	    			builder.append(sCurrentLine);
 	    			builder.append('\n');
-	    	}
+	    	}  
 	    			StringBuilder metabuilder = new StringBuilder();
 	    	 
 	    	        String result= builder.toString();  
@@ -85,7 +85,7 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 					initKVService(Integer.parseInt(command.getParameters()[1]),Integer.parseInt(command.getParameters()[2]),command.getParameters()[3]);
 				break;
 				case "start":
-					start(command);
+					start(command,ActiveServerList);
 					
 					
 					break;
@@ -96,10 +96,10 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 					break; 
 				
 				case "shutdown":
-					shutDown(command);
+					shutDown(command,ActiveServerList);
 				break;
 				case "add":
-					addRandomNode();
+					addRandomNode(command);
 					//TODOcheck if sorting is happening properly);
 					
 				break;
@@ -109,12 +109,12 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 					break;
 				
 			}}
-		private static void addRandomNode()
+		private static void addRandomNode(ECSCommandModel command) throws NoSuchAlgorithmException, UnsupportedEncodingException
 		{boolean uniqueServerFound= false;
 		boolean serverAlreadyExists=true;
 		int uniqueServerIndex=0;
 		System.out.println(ActiveServerList.count());
-			if(ActiveServerList.count()<FullServerList.count())		
+			if(ActiveServerList.count()<    FullServerList.count())		
 			{//handle condition when activeserver is already same as fullserverList
 				while(uniqueServerFound!=true)
 				{
@@ -138,7 +138,36 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 						}
 				
 				}
+				int cacheSize=Integer.parseInt(command.getParameters()[0]);
+				String cacheStrategy=command.getParameters()[1];
+				ServerModel AddedServerNode = new ServerModel(FullServerList.getServerByIndex(uniqueServerIndex));
+				AddedServerNode.setCacheSize(cacheSize);
+				AddedServerNode.setCacheStrategy(cacheStrategy);
+				ActiveServerList.add(AddedServerNode);
+				ActiveServerList.sortHash();//TODOcheck if sorting is happening properly
+				ActiveServerList.prepareMetaData();
+				metadata=ActiveServerList.stringify();
+				initKVService(AddedServerNode);//launch the newly added node
+				 ServerContainerModel addedServerList = new ServerContainerModel();
+				 addedServerList.add(AddedServerNode);
+				 start(new ECSCommandModel("start"), addedServerList);//start the newly added node
+				 //send transfer command to the previous node/affected neighbour to initiate handoff
+				 ServerModel prevNode = ActiveServerList.getPreviousNode(AddedServerNode);
+				 ECSCommandModel addTransferCmd= new ECSCommandModel();
+				 addTransferCmd.setInstruction("add");
+				 System.out.println(sendData(addTransferCmd, prevNode));
+				 //update metadata for all affected nodes
+				 updateMetaData(ActiveServerList);
+				 
+				//check if preperation of metadata is happening properly
 				
+				//initKVService(serverNode);
+				
+			    //initialize the newly added server through overloaded call of iniKvservice 
+				//and call sendata() parsing the metadata as a parameter
+				
+				
+				//sendData(command);
 				}
 			else
 			{
@@ -150,13 +179,18 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 			
 		}
 		
-		private static void start(ECSCommandModel command)
-		{
+		private static void start(ECSCommandModel command, ServerContainerModel serverList )
+		{ command.setInstruction("start");
 			for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
-			{
-				String Response=sendData(command, ActiveServerList.getServerByIndex(ctr));
+			{   
+				String Response=sendData(command, serverList.getServerByIndex(ctr));
 			
 			}
+			if(serverList.count()>1)
+			currentState=currentState.START;
+			updateMetaData(serverList);
+			
+			
 		}
 		private static void stop(ECSCommandModel command)
 		{if(currentState==currentState.START && currentState!= currentState.SHUTDOWN)
@@ -175,17 +209,19 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 		//TODO put a if condition to check if the stop was successful then set the state
 		
 		}
-		private static void shutDown(ECSCommandModel command)
-		{
+		private static void shutDown(ECSCommandModel command,ServerContainerModel serverList)
+		{//look into whether to remove all nodes when shutting down
+			command.setInstruction("shutdown");
 			if((currentState==currentState.START || currentState==currentState.STOP || currentState==currentState.INITIALIZED) && currentState!= currentState.SHUTDOWN)
 			{
-				for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
-				{
-					String response=sendData(command, ActiveServerList.getServerByIndex(ctr));
+				for(int ctr=0; ctr<serverList.count(); ctr++)
+				{ 
+					String response=sendData(command, serverList.getServerByIndex(ctr));
 				System.out.println(response);
 				}
 			//TODO put a if condition to check if the stop was successful then set the state otherwise throw an error
-			currentState=currentState.SHUTDOWN;
+			    if(serverList.count()>1)
+				currentState=currentState.SHUTDOWN;
 		    }
 			else{
 				
@@ -195,13 +231,55 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 		private static void removeRandomNode()
 		{
 			Random rn = new Random();
+			//choose a random node from ActiveServerList
 			int randomIndex=rn.nextInt(ActiveServerList.count());
+			ServerModel deletedNode = ActiveServerList.getServerByIndex(randomIndex);
+			
+			//store the previous node (affected neighbor)
+			ServerModel prevNode = ActiveServerList.getPreviousNode(deletedNode);
+			ECSCommandModel deleteTransferCmd= new ECSCommandModel();
+			deleteTransferCmd.setInstruction("remove");
+			
+			//initiate handover of data from affected neighbor
+			System.out.println(sendData(deleteTransferCmd, deletedNode));
+			//TODO check what response the KVsrver sends and continue only if the response is positive
+			ServerContainerModel addedNodeList = new ServerContainerModel();
+			 
+			//shutdown the deleted node 
+			shutDown(deleteTransferCmd, addedNodeList);
+			
+			//
+			
+		
+			//modify the metadata on ecs to reflect the node revoal
 			ActiveServerList.remove(randomIndex);
 			ActiveServerList.prepareMetaData();
 			metadata=ActiveServerList.stringify();
 			
+			//send updatedMetadata to the affected Neighbours
+		    ServerContainerModel affectedNeighbours= new ServerContainerModel();
+		    affectedNeighbours.add(prevNode);
+			updateMetaData(ActiveServerList);
+			
 		}
-	   private static boolean initKVService(int NumberofNodes, int cacheSize, String displacementStrategy) {
+		private static void updateMetaData(ServerContainerModel serverList)
+		{
+			ECSCommandModel updateCommand= new ECSCommandModel();
+			updateCommand.setInstruction("meta");
+			String[] parameters= new String[1];
+			parameters[0]=metadata;
+			updateCommand.setParameters(parameters);
+			for(int ctr=0; ctr<serverList.count(); ctr++)
+			{
+				System.out.println(sendData(updateCommand, serverList.getServerByIndex(ctr)));
+			}
+			
+
+			
+			
+			
+		}
+	   private static void initKVService(int NumberofNodes, int cacheSize, String displacementStrategy) {
 					
 					//Initialize ActiveServerList BY randomly selected nodes (without replacement) from FullServerList
 					List<Integer> numbersList = IntStream.rangeClosed(1,FullServerList.count()).boxed().collect(Collectors.toList());
@@ -225,11 +303,12 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 					}
 					//sendMetadata to all of the initialized nodes
 					//
-					return true;
+					//return true;
 				}
-				private static boolean initKVService(ServerModel server) 
+				private static void initKVService(ServerModel server) 
 				{
-	
+					
+					//SSHPublicKeyAuthentication.sshConnection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
 					//takes parameters as ip,port,cachestrategy,size and launches ssh
 					
 					//SSHPublicKeyAuthentication.ssh Connection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
@@ -237,7 +316,7 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 					//sendMetadata to all of the initialized nodes
 				
 					//
-					return true;
+					//return true;
 				}
 				
 				private static String sendData(ECSCommandModel command,ServerModel server)

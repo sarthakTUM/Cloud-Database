@@ -28,6 +28,7 @@ public class ECSCommandModel {
 	public void setCompleteCommandString(String completeCommandString) {
 		CompleteCommandString = completeCommandString;
 	}
+	public ECSCommandModel(){}
 	public ECSCommandModel(String instruction) {
 		super();
 		String[] temp=instruction.split(" ");
