@@ -80,16 +80,17 @@ public class ServerContainerModel {
 	  }
 		return null;
 	}
-	public ServerModel getResponsibleServer(String key)
+	public ServerModel getResponsibleServer(String key) throws NoSuchAlgorithmException, UnsupportedEncodingException
 	{ int hashedKey=Manager.hash(key);
 		for(int ctr=0; ctr<this.ServerList.size();ctr++)
 		{
 			if(ServerList.get(ctr).getStartIndex()<= hashedKey && ServerList.get(ctr).getEndIndex()>=hashedKey )
-			{
+			{   
 				return getServerByIndex(ctr);
 				
 			}
 	  }
+		return null;
 	}
 	public  ServerContainerModel  getNextNnodes(String IP, int port, int NumberOfNodes )
 	{ServerContainerModel replicationServ = new ServerContainerModel();

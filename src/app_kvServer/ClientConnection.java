@@ -77,7 +77,7 @@ public class ClientConnection implements Runnable {
 					data = latestMsg.getMsg();
 					String[] tokens= data.split(" ");
 					//sendMessage(new TextMessage("while"));
-					if(tokens[0].equals("@"))
+					if(tokens[0].equals("ECS"))
 					{
 						processECSCmd(tokens);
 						

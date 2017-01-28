@@ -1,5 +1,4 @@
 package app_kvServer;
-
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,7 +12,7 @@ import java.io.IOException;
 //import org.apache.log4j.Level;
 //import org.apache.log4j.Logger;
 
-import caching.Node;
+
 
 /**
  * Represents a simple Echo Server implementation.
@@ -36,7 +35,7 @@ public class KVServer extends Thread {
      * 		reside in the range of dynamic ports, i.e 49152 – 65535.
      */
     public KVServer(int port){
-        this.port = 8800;
+        this.port = port;
     }
 
     /**
@@ -113,7 +112,9 @@ public class KVServer extends Thread {
 				//System.out.println("Usage: Server <port>!");
 			//} else {
 				//int port = Integer.parseInt(args[0]);
-				new KVServer(8800).start();
+			int k=Integer.parseInt(args[0]);
+				System.out.println(k);
+    		new KVServer(k).start();
 			//}
 		} catch (NumberFormatException nfe) {
 			System.out.println("Error! Invalid argument <port>! Not a number!");
@@ -129,15 +130,16 @@ public class KVServer extends Thread {
     public static boolean isServerActiveCheck() {
 		return serveractivecheck;
 	}
-	public static void (boolean serveractivecheck) {
-		serveractivecheck = serveractivecheck;
-	}
+
+   // public static void  (boolean serveractivecheck) {
+		//serveractivecheck = serveractivecheck;
+	//}
 	
 	//public static boolean serveractivecheck = false;
 	public static String getMetadata() {
 		return metadata;
 	}
 	public static void setMetadata(String metadata) {
-		Manager.metadata = metadata;
+		//Manager.metadata = metadata;
 	}
 }

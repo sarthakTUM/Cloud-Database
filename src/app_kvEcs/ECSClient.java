@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -21,6 +23,9 @@ import app_kvClient.CommandModel;
 import javafx.util.Pair;
 
 import app_kvServer.CacheSys;
+import ch.ethz.ssh2.Connection;
+import ch.ethz.ssh2.Session;
+import ch.ethz.ssh2.StreamGobbler;
 import app_kvServer.CacheFIFO2;
 public class ECSClient {
 	
@@ -30,14 +35,75 @@ public class ECSClient {
 private static ServerContainerModel FullServerList = new ServerContainerModel();
 private static String metadata;
 private static ServerContainerModel ActiveServerList= new ServerContainerModel();
-	   public static void main(String[] args) throws IOException, NoSuchAlgorithmException 
+public static void SSHClient(int port) throws IOException{
+    System.out.println("inside the ssh function");
+   
+    	String hostname = "127.0.0.1";
+		String username = "Anant";
+
+		File keyfile = new File("C:/cygwin64/home/Anant/.ssh/id_rsa"); // or "~/.ssh/id_dsa"
+		String keyfilePass = "a"; // will be ignored if not needed
+
+		try
+		{
+			/* Create a connection instance */
+
+			Connection conn = new Connection(hostname);
+
+			/* Now connect */
+
+			conn.connect();
+
+			/* Authenticate */
+
+			boolean isAuthenticated = conn.authenticateWithPublicKey(username, keyfile, keyfilePass);
+
+			if (isAuthenticated == false)
+				throw new IOException("Authentication failed.");
+
+			/* Create a session */
+
+			Session sess = conn.openSession();
+
+			sess.execCommand("nohup java -jar C:/Users/Anant/ec.jar "+port+" ERROR & ");
+
+			InputStream stderr= new StreamGobbler(sess.getStdout());
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(stderr));
+
+			System.out.println("Here is some information about the remote host:");
+
+		
+			/* Close this session */
+			
+			sess.close();
+
+			/* Close the connection */
+
+			conn.close();
+
+		}
+	finally{}
+	
+    }
+   
+
+public static void main(String[] args) throws IOException, NoSuchAlgorithmException 
 	   {
-		  
-		   
+	   SSHClient(5014);
+	   SSHClient(5014);
+	   
+		   Process proc = null;
+		   String script = "C:/cygwin64/bin/bash.exe C:/Users/Anant/Documents/Cloud-Database/src/app_kvEcs/script.sh";
+            
+		 
+
+	        // Grab output and print to display
+	        
 		   
 	    	String sCurrentLine;
 	    	System.out.println(new File(".").getAbsolutePath());
-	    	BufferedReader br = new BufferedReader(new FileReader("ecsconfig.config"));
+	    	BufferedReader br = new BufferedReader(new FileReader("ecsconfig.txt"));
 	    	StringBuilder builder = new StringBuilder();
 	    	while ((sCurrentLine = br.readLine()) != null) {
 	    			builder.append(sCurrentLine);
@@ -49,27 +115,17 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 	    	        
 	    	        String[] rows = result.split("\n");
 	    	       
-	    	        for (int i = 0; i < rows.length; i++) {
+	    	        for (int i = 0; i < rows.length; i++) 
+	    	        {
 	    	        
 	    	        	String[] columns = rows[i].split(" ");
 	    	        	
 	    	        	FullServerList.add(new ServerModel(columns[0],columns[1],Integer.parseInt(columns[2])));
 	    	        	
-	    	       
-	    	       
-	    	        
+	    	         
 	    	        }
 	    	        initKVService(4, 10, "lifo");
-	    	
-	    	      
-	    	       CacheSys obj2= new CacheSys("FIFO",10);
-	    	       obj2.put("a", "b");
-	    	       
-	    	       System.out.println(obj2.get("a")+obj2.get("c"));
-	    	       
-	    	       
-	    	       
-	    	       
+	                
 	    	        System.out.println(ActiveServerList.getServerByIndex(0).getName()+ActiveServerList.getServerByIndex(0).getHashValue());
 	    	        System.out.println(ActiveServerList.getServerByIndex(1).getName()+ActiveServerList.getServerByIndex(1).getHashValue());
 	    	       ActiveServerList.sortHash();
@@ -165,10 +221,11 @@ private static ServerContainerModel ActiveServerList= new ServerContainerModel()
 				 //send transfer command to the previous node/affected neighbour to initiate handoff
 				 ServerModel prevNode = ActiveServerList.getPreviousNode(AddedServerNode);
 				 ECSCommandModel addTransferCmd= new ECSCommandModel();
+				 updateMetaData(ActiveServerList);
 				 addTransferCmd.setInstruction("add");
 				 System.out.println(sendData(addTransferCmd, prevNode));
 				 //update metadata for all affected nodes
-				 updateMetaData(ActiveServerList);
+				 
 				 
 				//check if preperation of metadata is happening properly
 				
