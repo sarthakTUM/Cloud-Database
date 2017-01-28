@@ -104,7 +104,7 @@ public class ECSKVstore {
 
 	}
 
-	public static void put(String command) throws Exception {
+	public static void put(String message) throws Exception {
 		// TODO Auto-generated method stub
 		
 		//if(value == null){

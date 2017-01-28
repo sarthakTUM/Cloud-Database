@@ -35,7 +35,7 @@ public class ECSClient {
 private static ServerContainerModel FullServerList = new ServerContainerModel();
 private static String metadata;
 private static ServerContainerModel ActiveServerList= new ServerContainerModel();
-public static void SSHClient(int port) throws IOException{
+public static void SSHClient(int port, String CacheStrategy) throws IOException{
     System.out.println("inside the ssh function");
    
     	String hostname = "127.0.0.1";
@@ -65,7 +65,7 @@ public static void SSHClient(int port) throws IOException{
 
 			Session sess = conn.openSession();
 
-			sess.execCommand("nohup java -jar C:/Users/Anant/ec.jar "+port+" ERROR & ");
+			sess.execCommand("nohup java -jar C:/Users/Anant/ec.jar "+port+" "+CacheStrategy+" ERROR & ");
 
 			InputStream stderr= new StreamGobbler(sess.getStdout());
 
@@ -90,8 +90,7 @@ public static void SSHClient(int port) throws IOException{
 
 public static void main(String[] args) throws IOException, NoSuchAlgorithmException 
 	   {
-	   SSHClient(5014);
-	   SSHClient(5014);
+	   
 	   
 		   Process proc = null;
 		   String script = "C:/cygwin64/bin/bash.exe C:/Users/Anant/Documents/Cloud-Database/src/app_kvEcs/script.sh";
@@ -276,7 +275,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 		}
 		//TODO put a if condition to check if the stop was successful then set the state
 		
-		}
+		}sw12
 		private static void shutDown(ECSCommandModel command,ServerContainerModel serverList)
 		{//look into whether to remove all nodes when shutting down
 			command.setInstruction("shutdown");
@@ -342,7 +341,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 				System.out.println(sendData(updateCommand, serverList.getServerByIndex(ctr)));
 			}
 			
-
+  
 			
 			
 			
@@ -366,8 +365,8 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 					//Launch ssh for each of the nodes in the ActiveServerList
 					for(int i=0; i<NumberofNodes; i++)
 					{//takes parameters as ip,port,cachestrategy,size and launches ssh
-						ServerModel Temp = ActiveServerList.getServerByIndex(i);
-						//SSHPublicKeyAuthentication.sshConnection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
+						ServerModel temp = ActiveServerList.getServerByIndex(i);
+						SSHClient(temp.getPort(), temp.getCacheStrategy());
 					}
 					//sendMetadata to all of the initialized nodes
 					//
@@ -378,7 +377,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 					
 					//SSHPublicKeyAuthentication.sshConnection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
 					//takes parameters as ip,port,cachestrategy,size and launches ssh
-					
+					SSHClient(server.getPort(), server.getCacheStrategy());
 					//SSHPublicKeyAuthentication.ssh Connection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
 					
 					//sendMetadata to all of the initialized nodes
@@ -396,7 +395,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 							
 								ECSKVstore.connect(server.getIP(),server.getPort());
 								//TODOuse payload to send data instead of parsing via a string like right now
-								ECSKVstore.put(command.getCompleteCommandString());
+								ECSKVstore.put("ECS "+command.getCompleteCommandString());
 								 
 								//TODO remember to flush the response string so previous responses dont get repeated
 								ECSKVstore.disconnect();
