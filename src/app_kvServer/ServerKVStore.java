@@ -58,7 +58,7 @@ public class ServerKVStore {
 				
 				KVPair = KVPairs.item(i);
 				KVPairChildren = KVPair.getChildNodes();
-				for (int y = 0; y < KVPairChildren.getLength(); y++) 
+				for (int y = 0; y < KVPairChildren.getLength()-1; y++) 
 				{
 					//if(key.equals(KVPairChildren.item(y).getTextContent()))
 					String key =KVPairChildren.item(y).getTextContent();
@@ -208,7 +208,7 @@ public class ServerKVStore {
 		foundkey=false;	
 			KVPair = KVPairs.item(i);
 			KVPairChildren = KVPair.getChildNodes();
-			for (int y = 0; y < KVPairChildren.getLength(); y++) 
+			for (int y = 0; y < KVPairChildren.getLength()-1; y++) 
 			{
 				
 				String key =KVPairChildren.item(y).getTextContent();
@@ -223,6 +223,7 @@ public class ServerKVStore {
 			{
 				System.out.println("foundkey");
 				rootelement.removeChild(KVPair);
+				i--;
 				setStatus("DELETE_SUCCESS");
 				foundkey = false;
 			}

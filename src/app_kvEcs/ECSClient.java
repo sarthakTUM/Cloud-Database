@@ -132,6 +132,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 	   failureDetection();
 	   ServerKVStore.put("abc", "bcd");
 	   ServerKVStore.put("abc2", "bcd2");
+	   System.out.println(ServerKVStore.get("abc"));
 	   int range1=Manager.hash("abc");
 	   int range2=Manager.hash("abc2");
 	   System.out.println(range1);
