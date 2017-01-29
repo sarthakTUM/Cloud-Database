@@ -16,6 +16,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -26,7 +28,9 @@ import app_kvServer.CacheSys;
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
 import ch.ethz.ssh2.StreamGobbler;
+import common.messages.Manager;
 import app_kvServer.CacheFIFO2;
+import app_kvServer.ServerKVStore;
 public class ECSClient {
 	
 //move these variables to another ecs handler class begin
@@ -87,10 +91,55 @@ public static void SSHClient(int port, String CacheStrategy) throws IOException{
 	
     }
    
+public static void failureDetection()
+{
+	Timer timer = new Timer();
+	TimerTask myTask = new TimerTask() 
+	{
+	    @Override
+	    public void run()
+	    {ECSCommandModel command = new ECSCommandModel();
+	    command.setInstruction("ping");
+	    for(int ctr=0; ctr<ActiveServerList.count(); ctr++)
+		{   System.out.println("Pinging KV ServerNode: "+ ActiveServerList.getServerByIndex(ctr).getName());
+			String Response=sendData(command, ActiveServerList.getServerByIndex(ctr));
+			if(Response.toUpperCase().contains("success"))
+			{
+				System.out.println("Ping was successful");
+			}
+			else
+			{
+			    System.out.println("Ping unsuccesful");
+			    handleFailedNode(ctr);
+			    //handle failure by first removing the crashed node, updating everything
+			}
+		
+		}
+		{//check if the response is succesful or not
+		}
+	    	
+	        // ping all servers every 5 minutes and check if they are up, else execute logic to replace them
+	    }
 
+		
+	};
+
+	timer.schedule(myTask, 300000, 300000);
+}
 public static void main(String[] args) throws IOException, NoSuchAlgorithmException 
 	   {
 	   
+	   failureDetection();
+	   ServerKVStore.put("abc", "bcd");
+	   ServerKVStore.put("abc2", "bcd2");
+	   int range1=Manager.hash("abc");
+	   int range2=Manager.hash("abc2");
+	   System.out.println(range1);
+	   System.out.println(range2);
+	   System.out.println(ServerKVStore.get(685866866,957949251));
+	   ServerKVStore.put(685866866,957949251);
+	   System.out.println(ServerKVStore.get(685866866,957949251));
+	  // System.out.println(ServerKVStore.get(range-2, range+2));
 	   
 		   Process proc = null;
 		   String script = "C:/cygwin64/bin/bash.exe C:/Users/Anant/Documents/Cloud-Database/src/app_kvEcs/script.sh";
@@ -137,8 +186,33 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 	    	        //processMessage(new ECSCommandModel("add 11 lifo"));
 	    	        
 }
-	   
-	   private static void processMessage(ECSCommandModel command) throws NoSuchAlgorithmException, UnsupportedEncodingException{
+private static void handleFailedNode(int serverByIndex) {
+	//modify the metadata on ecs to reflect the node revoal
+	ActiveServerList.remove(serverByIndex);
+	ActiveServerList.prepareMetaData();
+	metadata=ActiveServerList.stringify();
+	
+	updateMetaData(ActiveServerList);
+	
+	//add a randomly selected node to the ecs
+	ECSCommandModel command = new ECSCommandModel();
+	String[] parameters = new String[2];
+	parameters[0]="10";
+	parameters[1]="fifo";
+	command.setParameters(parameters);
+    try {
+		addRandomNode(command);
+	} catch (NoSuchAlgorithmException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (UnsupportedEncodingException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	
+}
+	   @SuppressWarnings("unused")
+	private static void processMessage(ECSCommandModel command) throws NoSuchAlgorithmException, NumberFormatException, IOException{
 
 			
 
@@ -180,7 +254,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 		boolean serverAlreadyExists=true;
 		int uniqueServerIndex=0;
 		System.out.println(ActiveServerList.count());
-			if(ActiveServerList.count()<    FullServerList.count())		
+			if(ActiveServerList.count()<  FullServerList.count())		
 			{//handle condition when activeserver is already same as fullserverList
 				while(uniqueServerFound!=true)
 				{
@@ -275,7 +349,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 		}
 		//TODO put a if condition to check if the stop was successful then set the state
 		
-		}sw12
+		}
 		private static void shutDown(ECSCommandModel command,ServerContainerModel serverList)
 		{//look into whether to remove all nodes when shutting down
 			command.setInstruction("shutdown");
@@ -300,7 +374,12 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 			Random rn = new Random();
 			//choose a random node from ActiveServerList
 			int randomIndex=rn.nextInt(ActiveServerList.count());
-			ServerModel deletedNode = ActiveServerList.getServerByIndex(randomIndex);
+			removeNode(randomIndex);
+			
+		}
+		private static void removeNode(int index)
+		{
+			ServerModel deletedNode = ActiveServerList.getServerByIndex(index);
 			
 			//store the previous node (affected neighbor)
 			ServerModel prevNode = ActiveServerList.getPreviousNode(deletedNode);
@@ -311,6 +390,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 			System.out.println(sendData(deleteTransferCmd, deletedNode));
 			//TODO check what response the KVsrver sends and continue only if the response is positive
 			ServerContainerModel addedNodeList = new ServerContainerModel();
+			addedNodeList.add(deletedNode);
 			 
 			//shutdown the deleted node 
 			shutDown(deleteTransferCmd, addedNodeList);
@@ -319,7 +399,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 			
 		
 			//modify the metadata on ecs to reflect the node revoal
-			ActiveServerList.remove(randomIndex);
+			ActiveServerList.remove(index);
 			ActiveServerList.prepareMetaData();
 			metadata=ActiveServerList.stringify();
 			
@@ -327,7 +407,6 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 		    ServerContainerModel affectedNeighbours= new ServerContainerModel();
 		    affectedNeighbours.add(prevNode);
 			updateMetaData(ActiveServerList);
-			
 		}
 		private static void updateMetaData(ServerContainerModel serverList)
 		{
@@ -346,7 +425,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 			
 			
 		}
-	   private static void initKVService(int NumberofNodes, int cacheSize, String displacementStrategy) {
+	   private static void initKVService(int NumberofNodes, int cacheSize, String displacementStrategy) throws IOException {
 					
 					//Initialize ActiveServerList BY randomly selected nodes (without replacement) from FullServerList
 					List<Integer> numbersList = IntStream.rangeClosed(1,FullServerList.count()).boxed().collect(Collectors.toList());
@@ -377,7 +456,12 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 					
 					//SSHPublicKeyAuthentication.sshConnection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
 					//takes parameters as ip,port,cachestrategy,size and launches ssh
-					SSHClient(server.getPort(), server.getCacheStrategy());
+					try {
+						SSHClient(server.getPort(), server.getCacheStrategy());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					//SSHPublicKeyAuthentication.ssh Connection(Temp.getIP(),Temp.getPort() , displacementStrategy, cacheSize);
 					
 					//sendMetadata to all of the initialized nodes

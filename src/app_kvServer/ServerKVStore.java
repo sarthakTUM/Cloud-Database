@@ -36,7 +36,7 @@ public class ServerKVStore {
 	private static DocumentBuilder docBuilder = null;
 	private static String getresult = null;
 	private static String STATUS;
-	private static List<Pair<String,String>> get(int startRange, int endRange) throws NoSuchAlgorithmException, UnsupportedEncodingException, DOMException
+	public static List<Pair<String,String>> get(int startRange, int endRange) throws NoSuchAlgorithmException, UnsupportedEncodingException, DOMException
 	{// pass  beginning and end hash range, and it gets all the values in that range in a list of key value pairs. can be used like list.get(index).getKey()/list.get(index).getValue()
 		List<Pair<String,String>> list = new ArrayList<Pair<String,String>>();
 		try {
@@ -63,7 +63,7 @@ public class ServerKVStore {
 					//if(key.equals(KVPairChildren.item(y).getTextContent()))
 					String key =KVPairChildren.item(y).getTextContent();
 					int hashedKey=Manager.hash(key);
-					if((hashedKey>=startRange) && (hashedKey<endRange))
+					if((hashedKey>=startRange) && (hashedKey<=endRange))
 					{
 						
 						String Value=KVPairChildren.item(y).getNextSibling().getTextContent();
@@ -91,7 +91,7 @@ public class ServerKVStore {
     	
     }return list;
     	}
-	static String get(String key){
+	public static String get(String key){
 	    	try {
 				parseDatabase();
 			} catch (SAXException | IOException | ParserConfigurationException e) {
@@ -134,7 +134,7 @@ public class ServerKVStore {
 	    	
 	    }
 	
-		static void put(String key, String value){
+		public static void put(String key, String value){
 		   
 		    try {
 				parseDatabase();
@@ -190,8 +190,53 @@ public class ServerKVStore {
 				setStatus("PUT_ERROR");
 			}
 		
+	}public static void put(int startRange, int endRange) throws NoSuchAlgorithmException, UnsupportedEncodingException
+	{
+		
+		boolean foundkey = false;
+		try {
+			parseDatabase();
+		} catch (SAXException | IOException | ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			setStatus("DELETE_ERROR");
+		}
+		KVPairs = rootelement.getChildNodes();
+		
+		for(int i = 0; i < KVPairs.getLength(); i++)
+		{
+		foundkey=false;	
+			KVPair = KVPairs.item(i);
+			KVPairChildren = KVPair.getChildNodes();
+			for (int y = 0; y < KVPairChildren.getLength(); y++) 
+			{
+				
+				String key =KVPairChildren.item(y).getTextContent();
+				int hashedKey=Manager.hash(key);
+				System.out.println(hashedKey);
+				if((hashedKey>=startRange) && (hashedKey<=endRange))
+				{
+					foundkey=true;
+				}
+			}
+			if(foundkey)
+			{
+				System.out.println("foundkey");
+				rootelement.removeChild(KVPair);
+				setStatus("DELETE_SUCCESS");
+				foundkey = false;
+			}
+		}
+		try {
+			writeToPersistentStorage();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			setStatus("DELETE_ERROR");
+		}
 	}
-		static void put(String key){
+		
+		public static void put(String key){
 			
 			boolean foundkey = false;
 			try {
