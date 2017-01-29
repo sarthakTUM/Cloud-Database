@@ -1,0 +1,16 @@
+package common.messages;
+public enum SystemStates {
+
+	CLOSED,
+	RUNNING,
+	INITIALIZED,
+	READY,
+	CONNECTED,
+	TIMED_WAIT,
+	WAIT,
+	DISCONNECTED,
+	STARTED,
+	HALT,
+	WRITE_LOCKED,
+	STOPPED
+}

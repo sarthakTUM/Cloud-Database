@@ -91,7 +91,9 @@ public class ServerMessageHandler extends Handler{
 								/*
 								 * TODO call processCommand() with a new ServerCommand of connect
 								 */
-								response = processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{serverConfig.getIP(), String.valueOf(serverConfig.getPort())}, "CONNECT", "SERVER"));
+								
+								//uncomment the below line when serverModel is incorporated.
+								//response = processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{serverConfig.getIP(), String.valueOf(serverConfig.getPort())}, "CONNECT", "SERVER"));
 								if(response.getResponseResult() == ResponseResult.SUCCESS){
 									/*
 									 * TODO call processCommand() with a new PUT command
