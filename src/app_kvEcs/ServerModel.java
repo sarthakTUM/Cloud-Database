@@ -16,6 +16,13 @@ private int cacheSize;
 private String cacheStrategy;
 private int HashValue;
 private int StartIndex, EndIndex;
+public ServerModel(String IP, int Port) throws NoSuchAlgorithmException, UnsupportedEncodingException  {
+	
+	this.IP = IP;
+	this.Port = Port;
+	this.HashValue=Manager.hash(IP+Port);
+
+}
 
 public ServerModel(ServerModel server) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 	
@@ -53,7 +60,17 @@ public String getName() {
 }
 /**
  * @param name the name to set
+ * @throws UnsupportedEncodingException 
+ * @throws NoSuchAlgorithmException 
  */
+public Boolean isResponsible(String key) throws NoSuchAlgorithmException, UnsupportedEncodingException
+{int hashedKey= Manager.hash(key);
+	if(this.getStartIndex()<= hashedKey && this.getEndIndex()>=hashedKey)
+		return true;
+	else
+		return false;
+		
+}
 public void setName(String name) {
 	Name = name;
 }
