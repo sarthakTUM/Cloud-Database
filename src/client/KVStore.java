@@ -6,6 +6,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 import common.messages.KVMessage;
+import common.messages.KVMessage.MessageSource;
+import common.messages.KVMessage.StatusType;
 import common.messages.Message;
 import common.messages.Payload;
 
@@ -18,6 +20,7 @@ public class KVStore implements KVCommInterface {
 	private InputStream inputStream;
 	private OutputStream outputStream;
 	private ClientSocketListener clientSocketListener;
+	private MessageSource messageSource = MessageSource.CLIENT;
 	/**
 	 * Initialize KVStore with address and port of KVServer
 	 * @param address the address of the KVServer
@@ -25,8 +28,8 @@ public class KVStore implements KVCommInterface {
 	 */
 	public KVStore(String address, int port) {
 		System.out.println(LOG + "initialized system with : " + address + ":" + port);
-		this.serverAddress = address;
-		this.serverPort = port;
+		this.serverAddress = "127.0.0.1";
+		this.serverPort = 1234;
 	}
 	
 	@Override
@@ -51,15 +54,23 @@ public class KVStore implements KVCommInterface {
 		
 
 		Payload payload = new Payload(key, value, "PUT");
+		payload.setSource(this.messageSource);
+		payload.setStatusType(StatusType.PUT);
 		Message message = new Message(payload);
 		byte[] request = message.serializeMessage();
+		
 		System.out.println(LOG + "serialized request: " + request);
 
 		outputStream.write(request);
+		outputStream.write(13);
 		outputStream.flush();
 
-		// call receive message that will read KVMessage returned by the server.
-		payload = receiveMessage();
+		Thread.sleep(2000);
+	
+		payload = clientSocketListener.getPayload();
+		if(payload != null){
+			System.out.println(LOG + "payload received : " + payload.getStatus());
+		}
 		
 		/*
 		 * TODO check if the source of the payload is SERVER then only return it. 
@@ -71,13 +82,20 @@ public class KVStore implements KVCommInterface {
 	public KVMessage get(String key) throws Exception {
 		// TODO Auto-generated method stub
 		Payload payload = new Payload(key, "null", "GET");
+		payload.setSource(messageSource);
+		payload.setStatusType(StatusType.GET);
 		Message message = new Message(payload);
 		byte[] request = message.serializeMessage();
 		System.out.println(LOG + "serialized request: " + request);
 
 		outputStream.write(request);
+		outputStream.write(13);
 		outputStream.flush();
 		
+		/*
+		 * TODO instead, call getPayload() of the clientSocketListener.
+		 */
+		Thread.sleep(1000);
 		payload = receiveMessage();
 		
 		/*

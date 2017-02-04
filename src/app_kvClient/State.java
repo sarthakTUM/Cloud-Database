@@ -1,12 +1,12 @@
 package app_kvClient;
 
-import app_kvClient.ClientSystem.SystemState;
+import common.messages.SystemStates;
 
 public class State {
 
-	private final SystemState state;
+	private final SystemStates state;
 
-	public State(SystemState systemState){
+	public State(SystemStates systemState){
 		this.state = systemState;
 	}
 
@@ -15,7 +15,7 @@ public class State {
         return "State [state=" + state + "]";
     }
 
-    public SystemState getState() {
+    public SystemStates getState() {
         return state;
     }
 }

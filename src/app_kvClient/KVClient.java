@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import app_kvClient.ClientSystem.SystemState;
+import common.messages.SystemStates;
 
 
 public class KVClient {
@@ -19,7 +19,7 @@ public class KVClient {
 	
 	private void run(){
 		clientSystem.initialize();
-		if(clientSystem.isValidTransition(new State(SystemState.READY))){
+		if(clientSystem.isValidTransition(new State(SystemStates.READY))){
 			System.out.println(LOG + "system is in valid state for transition to ready");
 			CommandController.initializeCommands();
 			clientSystem.updateState();

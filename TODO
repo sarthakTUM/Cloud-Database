@@ -30,3 +30,9 @@ the respective server first?
 the metadata back to Client? Client should just be receiving the answer.
 4. If a value is updated inside a recursive call, does it persist when backtracking, or is rolled
 to recursive value in previous recursion stack, i.e., the original one?
+5. When is the server passed the metadata when it is started by ECS?
+
+LATEST:
+1. For all commands from client, extract the valid server from list of servers it has (from metadata).
+2. Create a static metadata instance which can be accessed from any class, which contains the most recent metadata.
+3. Server has to check whether it is responsible for the key sent by the user.

@@ -10,8 +10,8 @@ public class Message implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private static final String LOG = "LOG:MESSAGE$:";
 	private static final String separator = " ";
-	private static final String ctrSeparator = "//";
-	private static final char ctrEOM = 0x0A;
+	private static final String ctrSeparator = "%";
+	private static final char ctrEOM = '\r';
 	private Payload payload;
 	private String stringifyPayload;
 	
@@ -32,20 +32,25 @@ public class Message implements Serializable{
 		String requestType = payload.getRequestType();
 		String key = payload.getKey();
 		String value = payload.getValue();
+		String messageSource = payload.getMessageSource().toString();
+		String statusType = payload.getStatus().toString();
 		
 		// TODO stringify payload.
-		String stringifyPayload = requestType + separator + key + separator + value;
+		String stringifyPayload = messageSource + separator + requestType + separator + key + separator + value + separator + statusType;
 		return stringifyPayload;
 	}
 	
 	private void addCtrChars(String stringifyPayload){
 		// TODO the value might also contain spaces.
-		this.stringifyPayload = stringifyPayload.replace(" ", ctrSeparator);
-		this.stringifyPayload.concat(String.valueOf(ctrEOM));
+		this.stringifyPayload = stringifyPayload.replace(separator, ctrSeparator);
+		//this.stringifyPayload.concat(ctrEOM);
 	}
 	
 	public byte[] serializeMessage(){
 		byte[] requestBytes = this.stringifyPayload.getBytes();
+		/*for(byte b:requestBytes){
+			System.out.println(b);
+		}*/
 		return requestBytes;
 	}
 

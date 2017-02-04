@@ -4,20 +4,19 @@ package app_kvClient;
 
 import app_kvClient.Response.ResponseResult;
 import app_kvClient.Response.ResponseSource;
+import app_kvServer.ServerContainerModel;
 import app_kvServer.ServerModel;
 import client.KVStore;
 import client.Metadata;
 import common.messages.KVMessage;
 
+/*
+ * TODO for all messages, extract the valid server from metadata.
+ */
 public class ServerMessageHandler extends Handler{
 
 	private static final String LOG = "LOG:SMHANDLR:";
-    /*
-	 * TODO implement switch case for handling various commands
-	 *
-	 * and call appropriate KVStore method which implements our
-	 * communication interface.
-	 */
+
 	private static KVStore kvStore;
 	public Response processCommand(CommandModel serverCommand){
 		Response response = null;
@@ -26,6 +25,7 @@ public class ServerMessageHandler extends Handler{
 		switch(serverCommand.getCommandInstruction()){
 		case "CONNECT":
 			// TODO call KVStore  connect method
+			boolean isConnected = true;
 			System.out.println(LOG + "executing CONNECT command");
 			String serverAddress = serverCommand.getCommandAttributes()[1];
 			int serverPort = Integer.valueOf(serverCommand.getCommandAttributes()[2]);
@@ -34,13 +34,23 @@ public class ServerMessageHandler extends Handler{
 				kvStore.connect();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				response = new Response(ResponseSource.SERVER, ResponseResult.FAIL, "Could not establish connection");
+				isConnected = false;
+				
 				e.printStackTrace();
+			}
+			finally{
+				if(isConnected){
+					response = new Response(ResponseSource.SERVER, ResponseResult.SUCCESS, "Connection established");
+				}
+				else{
+					response = new Response(ResponseSource.SERVER, ResponseResult.FAIL, "Could not establish connection");
+				}
 			}
 			break;
 		case "PUT":
 			String key = serverCommand.getCommandAttributes()[1];
 			String value = serverCommand.getCommandAttributes()[2];
+			
 			System.out.println(LOG + "executing PUT: " + key + "-" + value);
 			try {
 				/*
@@ -48,6 +58,7 @@ public class ServerMessageHandler extends Handler{
 				 */
 				KVMessage kvMessage = kvStore.put(key, value);
 				if(kvMessage != null){
+					System.out.println(LOG + "matching statustype: " + kvMessage.getStatus());
 					switch(kvMessage.getStatus()){
 					case DELETE_ERROR:
 						break;
@@ -66,6 +77,7 @@ public class ServerMessageHandler extends Handler{
 						break;
 					case PUT_SUCCESS:
 						response = new Response(ResponseSource.SERVER, ResponseResult.SUCCESS, "PUT request successful. Inserted : " + key + ":" + value);
+						System.out.println(LOG + "response created : " + response.getResponseResult() + " " + response.getResponseSource());
 						break;
 					case PUT_UPDATE:
 						response = new Response(ResponseSource.SERVER, ResponseResult.SUCCESS, "PUT request successful. Tuple updated : " + key + ":" + value);
@@ -83,7 +95,7 @@ public class ServerMessageHandler extends Handler{
 						
 						boolean isUpdated = Metadata.updateMetadata(fetchMetadata(kvMessage));
 						if(isUpdated){
-							ServerModel serverConfig = Metadata.findServer(key);
+							ServerModel serverConfig = new ServerContainerModel().getResponsibleServer(key);
 							/*
 							 * initiate a new PUT request with this serverConfig.
 							 */
@@ -93,7 +105,7 @@ public class ServerMessageHandler extends Handler{
 								 */
 								
 								//uncomment the below line when serverModel is incorporated.
-								//response = processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{serverConfig.getIP(), String.valueOf(serverConfig.getPort())}, "CONNECT", "SERVER"));
+								response = processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{serverConfig.getIP(), String.valueOf(serverConfig.getPort())}, "CONNECT", "SERVER"));
 								if(response.getResponseResult() == ResponseResult.SUCCESS){
 									/*
 									 * TODO call processCommand() with a new PUT command
@@ -125,7 +137,69 @@ public class ServerMessageHandler extends Handler{
 			 */
 			key = serverCommand.getCommandAttributes()[1];
 			try {
-				kvStore.get(key);
+				KVMessage kvMessage = kvStore.get(key);
+				if(kvMessage != null){
+					switch(kvMessage.getStatus()){
+					case DELETE_ERROR:
+						break;
+					case DELETE_SUCCESS:
+						break;
+					case GET:
+						break;
+					case GET_ERROR:
+						break;
+					case GET_SUCCESS:
+						response = new Response(ResponseSource.SERVER, ResponseResult.SUCCESS, "GET request successful. KEY: " + kvMessage.getKey() + " VALUE: " + kvMessage.getValue());
+						break;
+					case PUT:
+						break;
+					case PUT_ERROR:
+						break;
+					case PUT_SUCCESS:
+						break;
+					case PUT_UPDATE:
+						break;
+					case SERVER_NOT_RESPONSIBLE:
+						
+						/*
+						 * TODO retry workflow:
+						 * 1. Disconnect from old server
+						 * 2. update metadata file
+						 * 3. find new server
+						 * 4. processCommand() with connect to new server
+						 * 5. PUT to new server
+						 */
+						
+						boolean isUpdated = Metadata.updateMetadata(fetchMetadata(kvMessage));
+						if(isUpdated){
+							ServerModel serverConfig = new ServerContainerModel().getResponsibleServer(key);
+							/*
+							 * initiate a new PUT request with this serverConfig.
+							 */
+							if(serverConfig != null){
+								/*
+								 * TODO call processCommand() with a new ServerCommand of connect
+								 */
+								
+								//uncomment the below line when serverModel is incorporated.
+								response = processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{serverConfig.getIP(), String.valueOf(serverConfig.getPort())}, "CONNECT", "SERVER"));
+								if(response.getResponseResult() == ResponseResult.SUCCESS){
+									/*
+									 * TODO call processCommand() with a new PUT command
+									 */
+									//processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{key, value}, "PUT", "SERVER"));
+								}
+							}
+						}
+						break;
+					case SERVER_STOPPED:
+						break;
+					case SERVER_WRITE_LOCK:
+						break;
+					default:
+						break; 
+					}
+				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				System.out.println(LOG + "could not execute GET request. Please try again.");

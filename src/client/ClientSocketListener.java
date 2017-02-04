@@ -8,34 +8,44 @@ import common.messages.Payload;
 
 public class ClientSocketListener extends Thread implements SocketListener{
 
+	private static final String LOG = "LOG:CLSCKLNR:";
 	private Socket clientSocket;
 	private boolean isRunning;
 	private InputStream inputStream;
 	private static final int BUFFER_SIZE = 1024;
 	private static final int DROP_SIZE = 1024 * BUFFER_SIZE;
-	private Payload payload = null;
+	private volatile Payload payload = null;
 	
 	public ClientSocketListener(Socket clientSocket) {
-		// TODO Auto-generated constructor stub
+		
+		System.out.println(LOG + "initializing clientSocketListener with: " + clientSocket);
 		this.clientSocket = clientSocket;
 		try {
 			inputStream = this.clientSocket.getInputStream();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 	}
 	
 	public void run(){
+		System.out.println(LOG + "running CSL");
 		this.isRunning = true;
 		while(isRunning){
 			
-			// TODO see if KVMessage can be returned.
 			
-			//KVMessage kvMessage;
 			try {
-				this.payload = receiveMessage();
-				
+				if(inputStream.available() != 0){
+					System.out.println(LOG + "data available on inputStream of CSL");
+					this.payload = receiveMessage();
+					if(payload != null){
+						System.out.println(LOG + "payload received");
+					}
+					else{
+						System.out.println(LOG + "payload could not be received");
+					}
+				}
+								
 			} catch (IOException e) {
 				/*
 				 * TODO some exception occurred, call handleStatus with new status.
@@ -58,14 +68,7 @@ public class ClientSocketListener extends Thread implements SocketListener{
 	
 	@Override
 	public Payload receiveMessage() throws IOException{
-		/*
-		 * TODO receive Message from this.clientSocket's inputStreamin form of bytes[]
-		 * 		and construct a Payload and return it.
-		 * 		1. Check if inputStream is not null.
-		 * 		2. If something is present on it, read until delimiter.
-		 * 		3. Store the bytes[] and pass them to Payload construvtor to construct a new message of type KVMessage
-		 * 		
-		 */
+		
 		Payload payload = null;
 		if(inputStream.available() != 0){
 			/*

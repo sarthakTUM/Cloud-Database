@@ -2,9 +2,10 @@ package app_kvClient;
 
 import java.util.HashMap;
 
-import app_kvClient.ClientSystem.SystemState;
 import app_kvClient.Response.ResponseResult;
 import app_kvClient.Response.ResponseSource;
+
+import common.messages.SystemStates;
 
 public class CommandController {
 
@@ -133,17 +134,17 @@ public class CommandController {
 		response = new Response(ResponseSource.CLIENT, ResponseResult.SUCCESS, "System state check passed");
 		switch(command.getCommandInstruction()){
 		case "CONNECT":
-			if(!clientSystem.isValidTransition(new State(SystemState.CONNECTED))){
+			if(!clientSystem.isValidTransition(new State(SystemStates.CONNECTED))){
 				response = new Response(ResponseSource.CLIENT, ResponseResult.FAIL, "The system is not running");
 			}
 			break;
 		case "PUT":
-			if(!clientSystem.isValidTransition(new State(SystemState.TIMED_WAIT))){
+			if(!clientSystem.isValidTransition(new State(SystemStates.TIMED_WAIT))){
 				response = new Response(ResponseSource.CLIENT, ResponseResult.FAIL, "The system is not connected to any server. Please connect and try again");
 			}
 			break;
 		case "GET":
-			if(!clientSystem.isValidTransition(new State(SystemState.TIMED_WAIT))){
+			if(!clientSystem.isValidTransition(new State(SystemStates.TIMED_WAIT))){
 				response = new Response(ResponseSource.CLIENT, ResponseResult.FAIL, "The system is not connected to any server. Please connect and try again");
 			}
 			break;

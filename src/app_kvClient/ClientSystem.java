@@ -2,37 +2,33 @@ package app_kvClient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+
+
+import app_kvServer.ServerContainerModel;
+import common.messages.SystemStates;
 
 public class ClientSystem {
 
 	private static final String LOG = "LOG:CLNTSYST:";
 
-	public enum SystemState {
-		CLOSED,
-		RUNNING,
-		INITIALIZED,
-		READY,
-		CONNECTED,
-		TIMED_WAIT,
-		WAIT,
-		DISCONNECTED	
-	}
+	private static ServerContainerModel metadata = new ServerContainerModel();
+
 	private StateMachine stateMachine;
 	public static boolean isInit;
 	public static boolean isCmdInit;
 	
 
-	State closed = new State(SystemState.CLOSED);
-	State running = new State(SystemState.RUNNING);
-	State initialized = new State(SystemState.INITIALIZED);
-	State ready = new State(SystemState.READY);
-	State connected = new State(SystemState.CONNECTED);
-	State timedWait = new State(SystemState.TIMED_WAIT);
-	State wait = new State(SystemState.WAIT);
-	State disconnected = new State(SystemState.DISCONNECTED);
+	State closed = new State(SystemStates.CLOSED);
+	State running = new State(SystemStates.RUNNING);
+	State initialized = new State(SystemStates.INITIALIZED);
+	State ready = new State(SystemStates.READY);
+	State connected = new State(SystemStates.CONNECTED);
+	State timedWait = new State(SystemStates.TIMED_WAIT);
+	State wait = new State(SystemStates.WAIT);
+	State disconnected = new State(SystemStates.DISCONNECTED);
 
 	Condition run = new Condition("runTrue");
 	Condition init = new Condition("initTrue");
@@ -66,21 +62,21 @@ public class ClientSystem {
 		case CLOSED:
 			break;
 		case CONNECTED:
-			valid = (curr.getState() == SystemState.READY);
+			valid = (curr.getState() == SystemStates.READY);
 			break;
 		case DISCONNECTED:
 			break;
 		case INITIALIZED:
-			valid = (curr.getState() == SystemState.RUNNING);
+			valid = (curr.getState() == SystemStates.RUNNING);
 			break;
 		case READY:
-			valid = (curr.getState() == SystemState.INITIALIZED);
+			valid = (curr.getState() == SystemStates.INITIALIZED);
 			break;
 		case RUNNING:
-			valid = (curr.getState() == SystemState.CLOSED);
+			valid = (curr.getState() == SystemStates.CLOSED);
 			break;
 		case TIMED_WAIT:
-			valid = (curr.getState() == SystemState.CONNECTED);
+			valid = (curr.getState() == SystemStates.CONNECTED);
 			break;
 		case WAIT:
 			break;
@@ -121,6 +117,11 @@ public class ClientSystem {
 	
 	public String getCurrState(){
 		return stateMachine.getCurrent().getState().toString();
+	}
+	
+	public static ServerContainerModel getMetadata(){
+		return metadata;
+		
 	}
 
 }
