@@ -39,10 +39,10 @@ public class ECSClient {
 private static ServerContainerModel FullServerList = new ServerContainerModel();
 private static String metadata;
 private static ServerContainerModel ActiveServerList= new ServerContainerModel();
-public static void SSHClient(int port, String CacheStrategy) throws IOException{
+public static void SSHClient(String host,int port, String CacheStrategy, int cachesize) throws IOException{
     System.out.println("inside the ssh function");
    
-    	String hostname = "127.0.0.1";
+    	String hostname = host;
 		String username = "Anant";
 
 		File keyfile = new File("C:/cygwin64/home/Anant/.ssh/id_rsa"); // or "~/.ssh/id_dsa"
@@ -69,7 +69,7 @@ public static void SSHClient(int port, String CacheStrategy) throws IOException{
 
 			Session sess = conn.openSession();
 
-			sess.execCommand("nohup java -jar C:/Users/Anant/ec.jar "+port+" "+CacheStrategy+" ERROR & ");
+		sess.execCommand("nohup java -jar C:/Users/Anant/ec.jar "+port+" "+CacheStrategy+" "+cachesize+" ERROR & ");
 
 			InputStream stderr= new StreamGobbler(sess.getStdout());
 
@@ -107,7 +107,7 @@ public static void failureDetection()
 			{
 				System.out.println("Ping was successful");
 			}
-			else
+			else 
 			{
 			    System.out.println("Ping unsuccesful");
 			    handleFailedNode(ctr);
@@ -126,20 +126,15 @@ public static void failureDetection()
 
 	timer.schedule(myTask, 300000, 300000);
 }
-public static void main(String[] args) throws IOException, NoSuchAlgorithmException 
+public static void main(String[] args) throws Exception 
 	   {
-	   
+	   ECSKVstore.connect("127.0.0.1", 6001);
+	   ECSKVstore.put("ECS ping");
+	   ECSKVstore.put("ECS ping");
+	   ECSKVstore.put("ECS ping");
+	   ECSKVstore.disconnect();
 	   failureDetection();
-	   ServerKVStore.put("abc", "bcd");
-	   ServerKVStore.put("abc2", "bcd2");
-	   System.out.println(ServerKVStore.get("abc"));
-	   int range1=Manager.hash("abc");
-	   int range2=Manager.hash("abc2");
-	   System.out.println(range1);
-	   System.out.println(range2);
-	   System.out.println(ServerKVStore.get(685866866,957949251));
-	   ServerKVStore.put(685866866,957949251);
-	   System.out.println(ServerKVStore.get(685866866,957949251));
+	
 	  // System.out.println(ServerKVStore.get(range-2, range+2));
 	   
 		   Process proc = null;
@@ -159,7 +154,7 @@ public static void main(String[] args) throws IOException, NoSuchAlgorithmExcept
 	    			builder.append('\n');
 	    	}  
 	    			StringBuilder metabuilder = new StringBuilder();
-	    	 
+	    	   
 	    	        String result= builder.toString();  
 	    	        
 	    	        String[] rows = result.split("\n");
@@ -365,7 +360,8 @@ private static void handleFailedNode(int serverByIndex) {
 			    if(serverList.count()>1)
 				currentState=currentState.SHUTDOWN;
 		    }
-			else{
+			else
+			{
 				
 				System.out.println("SHUTDOWN incomplete, possibly because the system is already shut down or hasnt been started");
 			}
@@ -446,9 +442,9 @@ private static void handleFailedNode(int serverByIndex) {
 					for(int i=0; i<NumberofNodes; i++)
 					{//takes parameters as ip,port,cachestrategy,size and launches ssh
 						ServerModel temp = ActiveServerList.getServerByIndex(i);
-						SSHClient(temp.getPort(), temp.getCacheStrategy());
+						SSHClient(temp.getIP(),temp.getPort(), displacementStrategy, cacheSize);
 					}
-					//sendMetadata to all of the initialized nodes
+					//sendMetadata to a   ll of the initialized nodes
 					//
 					//return true;
 				}

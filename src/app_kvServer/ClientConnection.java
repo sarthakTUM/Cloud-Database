@@ -109,7 +109,11 @@ public class ClientConnection implements Runnable {
 				//logger.error("Error! Unable to tear down connection!", ioe);
 			}
 		}
-	}
+			
+	}} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}finally{}}
 	
 	/**
 	 * Method sends a TextMessage using this socket.
@@ -236,11 +240,16 @@ public class ClientConnection implements Runnable {
  * network problems*/	
 
 	}
-	private void processECSCmd(String[] tokens){
+	private void processECSCmd(String[] tokens) throws IOException{
 		
 		switch(tokens[1]){
 		case "start":
+			
 			KVServer.serveractivecheck = true;
+			break;
+		case "ping":
+			TextMessage sendMsg = new TextMessage("ping");
+			sendMessage(sendMsg);
 			break;
 			
 		case "stop":
@@ -268,4 +277,3 @@ public class ClientConnection implements Runnable {
 		
 		
 	}
-}

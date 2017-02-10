@@ -112,7 +112,7 @@ public class KVServer extends Thread {
 				//System.out.println("Usage: Server <port>!");
 			//} else {
 				//int port = Integer.parseInt(args[0]);
-			int k=Integer.parseInt(args[0]);
+			int k=6001;
 				System.out.println(k);
     		new KVServer(k).start();
 			//}

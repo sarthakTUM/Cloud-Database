@@ -23,7 +23,8 @@ import client.KVCommInterface;
 //import utils.Logging;
 import common.messages.KVMessage;
 
-public class ECSKVstore {
+public class ECSKVstore
+{
 
 	
 	private  static Socket clientSocket;
@@ -39,6 +40,7 @@ public class ECSKVstore {
 	private KVMessage kvMessage;
 	private String address;
 	private int port;
+	static int attempts;
 	
 	
 	/**
@@ -70,11 +72,17 @@ public class ECSKVstore {
 		bis = new BufferedInputStream(iStream);
 
 		//Logging.FILE_LOGGER.debug("GET Input Stream for the Socket");
-
+		attempts=0;
+		while(bis.available() == 0 && attempts < 1000)
+        {
+            attempts++;
+            Thread.sleep(10);
+        }
+		System.out.println(attempts);
 		oStream = clientSocket.getOutputStream();
 		bos = new BufferedOutputStream(oStream);
 		//Logging.FILE_LOGGER.debug("GET Output Stream for the Socket");
-		Thread.sleep(1000);
+		Thread.sleep(2000);
 		String receivedMessage = receiveMessage();
 		System.out.println("RM : " + receivedMessage);
 		
@@ -121,7 +129,13 @@ public class ECSKVstore {
 		
 		//receive KVMessage from server.
 		
-		Thread.sleep(4000);
+		while(bis.available() == 0 && attempts < 100)
+        {
+            attempts++;
+            Thread.sleep(10);
+        }
+		
+		
 		String receivedMessage =  receiveMessage();
 		responseMessage= receivedMessage;
 		System.out.println("RM : " + receivedMessage);
