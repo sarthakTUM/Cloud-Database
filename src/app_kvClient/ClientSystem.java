@@ -44,7 +44,7 @@ public class ClientSystem {
 		transitions.add(new Transition(running, new HashSet<>(Arrays.asList(init)), initialized));
 		transitions.add(new Transition(initialized, new HashSet<>(Arrays.asList(cmdReady)), ready));
 		transitions.add(new Transition(ready, new HashSet<>(Arrays.asList(connect)), connected));
-		transitions.add(new Transition(connected, new HashSet<>(Arrays.asList(request)), timedWait));
+		transitions.add(new Transition(connected, new HashSet<>(Arrays.asList(request)), connected));
 
 		stateMachine = new StateMachine(initialized, transitions);
 		
@@ -89,6 +89,7 @@ public class ClientSystem {
 	
 	public void updateState(){
 		State curr = stateMachine.getCurrent();
+		System.out.println(LOG + "current system state: " + curr.getState());
 		switch(curr.getState()){
 		case CLOSED:
 			break;

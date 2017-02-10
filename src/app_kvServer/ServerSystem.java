@@ -15,15 +15,19 @@ public class ServerSystem {
 
 	private final static String LOG = "LOG:SERVRSYS:";
 	
-	private static boolean isClosed;
-	private static boolean isRunning;
-	private static boolean isInitialized;
-	private static boolean isHalted;
-	private static boolean isWriteLocked;
-	private static boolean isShutDown;
+	private static boolean isClosed = true;;
+	private static boolean isRunning = false;
+	private static boolean isInitialized = false;
+	private static boolean isHalted = false;
+	private static boolean isWriteLocked = false;
+	private static boolean isShutDown = false;
+	private static ServerModel serverIdentity;
+	private static ServerContainerModel replicatedServer;
+	private static boolean isReplicationEnabled;
+	private static int replicationCount;
 	
 	
-	private static ServerContainerModel metadata = new ServerContainerModel();
+	private static ServerContainerModel metadata;
 	/*
 	 * TODO: FSM needs to be corrected.
 	 */
@@ -35,12 +39,27 @@ public class ServerSystem {
 		REMOVE
 	}
 
-	public static void initializeSystem(){
+	public static void initializeSystem(String serverIP, int serverPort){
 		System.out.println(LOG + "initializing commands...");
 		initializeCommands();
 		
 		System.out.println(LOG + "valid Server commands : " + validCommands);
 		//initializeFSM();	
+		
+		System.out.println(LOG + "loading metadata");
+		metadata = new ServerContainerModel();
+		
+		System.out.println(LOG + "creating server identity with <IP> <PORT>: " + serverIP + " " + serverPort);
+		serverIdentity = new ServerModel(serverIP, serverPort);
+		
+		System.out.println(LOG + "preparing replicated server list");
+		replicatedServer = new ServerContainerModel();
+		
+		System.out.println(LOG + "initializing system states..");
+		isRunning = true;
+		
+		isReplicationEnabled = false;
+		replicationCount = 2;
 	}
 	
 	private static void initializeCommands(){
@@ -195,5 +214,33 @@ public class ServerSystem {
 
 	public static void setShutDown(boolean isShutDown) {
 		ServerSystem.isShutDown = isShutDown;
+	}
+	
+	public static ServerModel getIdentity(){
+		return serverIdentity;
+	}
+	public static void setServerIdentity(ServerModel serverModel){
+		 serverIdentity = serverModel;
+	}
+	
+	public static ServerContainerModel getReplicatedServerList(){
+		return replicatedServer;
+	}
+	public static void setReplicatedServerList(ServerContainerModel replications){
+		replicatedServer = replications;
+	}
+	
+	public static void setReplicationEnabled(boolean state){
+		isReplicationEnabled = state;
+	}
+	public static boolean getReplicationEnabled(){
+		return isReplicationEnabled;
+	}
+	
+	public static int getReplicationCount(){
+		return replicationCount;
+	}
+	public static void setReplicationCount(int count){
+		replicationCount = count;
 	}
 }

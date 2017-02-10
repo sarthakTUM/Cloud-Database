@@ -24,6 +24,7 @@ public class CommandController {
 		validCommand.put("CONNECT", "SERVER");
 		validCommand.put("GET", "SERVER");
 		validCommand.put("DISCONNECT", "SERVER");
+		validCommand.put("SYNC", "SERVER");
 		
 		/*
 		 * TODO if there are no exceptions, then update the ClientSystem variable.
@@ -97,6 +98,7 @@ public class CommandController {
 					 * 		was successful or not.
 					 */
 					clientSystem.updateState();
+					
 				}
 
 			}
@@ -147,6 +149,9 @@ public class CommandController {
 			if(!clientSystem.isValidTransition(new State(SystemStates.TIMED_WAIT))){
 				response = new Response(ResponseSource.CLIENT, ResponseResult.FAIL, "The system is not connected to any server. Please connect and try again");
 			}
+			break;
+		case "SYNC":
+			
 			break;
 			default:
 				

@@ -2,6 +2,8 @@ package app_kvClient;
 
 //import common.messages.KVMessage;
 
+import java.io.IOException;
+
 import app_kvClient.Response.ResponseResult;
 import app_kvClient.Response.ResponseSource;
 import app_kvServer.ServerContainerModel;
@@ -131,6 +133,16 @@ public class ServerMessageHandler extends Handler{
 				e.printStackTrace();
 			}
 			break;
+			
+		case "SYNC":
+			try {
+				KVMessage kvMessage = kvStore.sync(serverCommand.getCommandAttributes()[1]);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			break;
+			
 		case "GET":
 			/*
 			 * TODO receive KVMessage and based on the status, build a response, execute proper action.

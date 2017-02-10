@@ -23,7 +23,7 @@ attributes like Port, BegIndex, endIndex, etc. - done
 ISSUES:
 1. for how much time does the input stream bytes remain intact. What if the read from KVStore
 is called after another round of while(isRunning) is invoked, will the payload become null, or remain there.
-2. Can PUT command be issued before CONNECT. The client doesnt know KEY and VALUE at time of connect, so
+2. Can PUT command be issued before CONNECT. The client doesn't know KEY and VALUE at time of connect, so
 CONNECT will be issued to a random server. Instead, should PUT issue an internal connect command for
 the respective server first?
 3. Why can't server itself retry the connect request based on the metadata file it has? Why is it sending
@@ -36,3 +36,9 @@ LATEST:
 1. For all commands from client, extract the valid server from list of servers it has (from metadata).
 2. Create a static metadata instance which can be accessed from any class, which contains the most recent metadata.
 3. Server has to check whether it is responsible for the key sent by the user.
+
+FINAL TODO:
+1) check if server is responsible for the respective key or not. - done
+2) replicate during PUT.
+3) RETRY on client side if it gets SERVER_NOT_RESPONSIBLE from server.
+4. ask Anant to create a function boolean isResponsible(ServerModel, key)

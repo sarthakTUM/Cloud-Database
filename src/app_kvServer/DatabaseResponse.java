@@ -1,13 +1,19 @@
 package app_kvServer;
 
-import common.messages.KVMessage.StatusType;
+import java.io.Serializable;
+import java.util.List;
 
 import app_kvServer.DataStoreWrapper.DBCommand;
 import app_kvServer.DataStoreWrapper.DBRequestResult;
+import common.messages.KVMessage.StatusType;
 
 
-public class DatabaseResponse {
+public class DatabaseResponse implements Serializable{
  
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private DBCommand reuqestType;
 	private DBRequestResult result;
 	private String message;
@@ -16,6 +22,7 @@ public class DatabaseResponse {
 	private Byte[] misc;
 	private String key;
 	private String value;
+	private List<Long> serverChecksumTable;
 	
 	public DBCommand getReuqestType() {
 		return reuqestType;
@@ -58,6 +65,12 @@ public class DatabaseResponse {
 	}
 	public String getValue(){
 		return this.value;
+	}
+	public List<Long> getServerChecksumTable() {
+		return serverChecksumTable;
+	}
+	public void setServerChecksumTable(List<Long> serverChecksumTable) {
+		this.serverChecksumTable = serverChecksumTable;
 	}
 	
 	

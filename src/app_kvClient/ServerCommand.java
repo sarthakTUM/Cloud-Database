@@ -99,6 +99,10 @@ public class ServerCommand extends CommandModel {
 			else{
 				response.buildResponse(ResponseResult.SUCCESS, "DISCONNECT command failed syntax validity check", ResponseSource.CLIENT);
 			}
+			break;
+		case "SYNC":
+			response.buildResponse(ResponseResult.SUCCESS, "SYNC command passed syntax validity check", ResponseSource.CLIENT);
+			
 		}
 	
 		return response;

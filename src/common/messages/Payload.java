@@ -1,8 +1,18 @@
 package common.messages;
 
+import java.io.Serializable;
+
+import java.util.List;
+import java.util.Map;
+
 import app_kvServer.DatabaseResponse;
 
-public class Payload implements KVMessage{
+public class Payload implements KVMessage, Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	private static final String LOG = "LOG:PAYLOAD$:";
 	private String requestType;
@@ -10,6 +20,8 @@ public class Payload implements KVMessage{
 	private String value;
 	private StatusType statusType;
 	private MessageSource source;
+	private List<Long> serverChecksumTable;
+	private List<Map.Entry<Integer, Long>> instructionStream;
 	
 	
 	public Payload(){
@@ -52,6 +64,19 @@ public class Payload implements KVMessage{
 				this.value = tokens[3];
 				this.statusType = StatusType.valueOf(tokens[4]);
 				break;
+			case "start":
+				this.source = MessageSource.valueOf(tokens[0]);
+				this.requestType = tokens[1];
+				break;
+			case "META":
+				this.source = MessageSource.valueOf(tokens[0]);
+				this.requestType = tokens[1];
+				break;
+			case "SYNC":
+				this.source = MessageSource.valueOf(tokens[0]);
+				this.requestType = tokens[1];
+				this.key = tokens[2];
+				break;
 				default:
 					System.out.println(LOG + "unidentified request type received");
 					break;
@@ -67,6 +92,7 @@ public class Payload implements KVMessage{
 		this.source = MessageSource.SERVER;
 		this.key = response.getKey();
 		this.value = response.getValue();
+		this.serverChecksumTable = response.getServerChecksumTable();
 		/*
 		 * TODO set source to the server_name.
 		 */
@@ -114,6 +140,19 @@ public class Payload implements KVMessage{
 	public MessageSource getMessageSource() {
 		// TODO Auto-generated method stub
 		return this.source;
+	}
+	public List<Long> getServerChecksumTable() {
+		return serverChecksumTable;
+	}
+	public void setServerChecksumTable(List<Long> serverChecksumTable) {
+		this.serverChecksumTable = serverChecksumTable;
+	}
+	public List<Map.Entry<Integer, Long>> getInstructionStream() {
+		return instructionStream;
+	}
+	public void setInstructionStream(
+			List<Map.Entry<Integer, Long>> instructionStream) {
+		this.instructionStream = instructionStream;
 	}
 
 }

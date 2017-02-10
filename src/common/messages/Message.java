@@ -53,5 +53,14 @@ public class Message implements Serializable{
 		}*/
 		return requestBytes;
 	}
+	
+	public byte[] serializeExtensionMessage(){
+		byte[] requestBytes = this.stringifyPayload.getBytes();
+		/*for(byte b:requestBytes){
+			System.out.println(b);
+		}*/
+		return requestBytes;
+	}
+	
 
 }

@@ -26,7 +26,7 @@ public class KVClient {
 			System.out.println(LOG + "system state after init commands: " + clientSystem.getCurrState());
 		}
 		
-		System.out.println(LOG + "the valid commands [command=type] are : " + CommandController.getValidCommands());
+		//System.out.println(LOG + "the valid commands [command=type] are : " + CommandController.getValidCommands());
 		while(!stop){
 			stdin = new BufferedReader(new InputStreamReader(System.in));
 			System.out.print(PROMPT);

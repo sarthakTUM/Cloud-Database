@@ -77,6 +77,44 @@ public class ServerContainerModel {
 		}
 		return null;
 	}
+	public  ServerContainerModel  getPrevNnodes(String IP, int port, int NumberOfNodes)
+	{
+		ServerContainerModel replicationServ = new ServerContainerModel();
+		//takes the Ip and port, and number as parameters to return a ServerContainerModel populated with the next N nodes, wraps around
+		// parsing the host and Ip for node 3, and the NumberOfNodes as 2, would return nodes 4 and 5, doing so for 4 would return 5 and 1. doing it for 5 would return 1 and 2
+		for(int ctr=0; ctr<this.ServerList.size();ctr++)
+		{
+			if(ServerList.get(ctr).getIP().equalsIgnoreCase(IP) && ServerList.get(ctr).getPort()==port )
+			{
+				for(int ctr2=1; ctr2<=NumberOfNodes; ctr2++)
+				{
+				int index1=(ctr-ctr2)%this.ServerList.size();
+				replicationServ.add(this.ServerList.get(index1));
+				}
+				
+			}
+	  }
+		return replicationServ;
+	}
+	public  ServerContainerModel  getPrevNnodes(ServerModel server, int NumberOfNodes)
+	{
+		ServerContainerModel replicationServ = new ServerContainerModel();
+		//takes the Ip and port, and number as parameters to return a ServerContainerModel populated with the next N nodes, wraps around
+		// parsing the host and Ip for node 3, and the NumberOfNodes as 2, would return nodes 4 and 5, doing so for 4 would return 5 and 1. doing it for 5 would return 1 and 2
+		for(int ctr=0; ctr<this.ServerList.size();ctr++)
+		{
+			if(ServerList.get(ctr).getIP().equalsIgnoreCase(server.getIP()) && ServerList.get(ctr).getPort()==server.getPort() )
+			{
+				for(int ctr2=1; ctr2<=NumberOfNodes; ctr2++)
+				{
+				int index1=(ctr-ctr2)%this.ServerList.size();
+				replicationServ.add(this.ServerList.get(index1));
+				}
+				
+			}
+	  }
+		return replicationServ;
+	}
 	public ServerModel getResponsibleServer(String key) throws NoSuchAlgorithmException, UnsupportedEncodingException
 	{ int hashedKey=Manager.hash(key);
 	for(int ctr=0; ctr<this.ServerList.size();ctr++)

@@ -17,6 +17,7 @@ public class StateMachine {
 
     public void apply(Set<Condition> conditions) {
         current = getNextState(conditions);
+        System.out.println(LOG + "updated system state: " + current.getState());
     }
 
     State getNextState(Set<Condition> conditions) {

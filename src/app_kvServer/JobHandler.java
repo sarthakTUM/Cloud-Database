@@ -22,7 +22,7 @@ public class JobHandler implements Runnable{
 		
 	}
 	@Override
-	public void run() {
+	public synchronized void run() {
 		
 		this.jobHandlerID = Thread.currentThread().getId();
 		System.out.println(LOG + "Job Handler <JID> initialized with : <clientID> <jobQueue> <outputQueue> " + this.jobHandlerID + " " + this.clientID + " " + this.jobQueue.hashCode() + " " + this.outputQueue.hashCode());
@@ -41,8 +41,13 @@ public class JobHandler implements Runnable{
 					 */
 					DatabaseResponse response = Processor.process(payload);
 					if(response != null){
-
-						outputQueue.add(response);
+						
+						
+						System.out.println(LOG + "response from server != null");
+						System.out.println(LOG + response.getReuqestType() + " " + response.getStatus());
+						boolean isAdded = outputQueue.offer(response);
+						
+						System.out.println(LOG + "response added to outputQueue?: " + isAdded);
 						
 					}
 				}

@@ -26,6 +26,11 @@ public class ServerModel {
 
 	}
 
+	public ServerModel(String serverIP, int serverPort){
+		this.IP = serverIP;
+		this.Port = serverPort;
+	}
+
 	public ServerModel(String name, String iP, int port) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 
 		this.Name = name;
@@ -42,6 +47,15 @@ public class ServerModel {
 		this.HashValue = Manager.hash(IP+Name);
 		this.StartIndex = startIndex;
 		this.EndIndex = endIndex;
+	}
+	public Boolean isResponsible(String key) throws NoSuchAlgorithmException, UnsupportedEncodingException
+	{
+		int hashedKey= Manager.hash(key);
+		if(this.getStartIndex()<= hashedKey && this.getEndIndex()>=hashedKey)
+			return true;
+		else
+			return false;
+
 	}
 
 
@@ -131,5 +145,6 @@ public class ServerModel {
 	public void setEndIndex(int endIndex) {
 		EndIndex = endIndex;
 	}
+
 }
 

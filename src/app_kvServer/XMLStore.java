@@ -3,10 +3,11 @@ package app_kvServer;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javafx.util.Pair;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,6 +26,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import common.messages.KVMessage.StatusType;
+import common.messages.Manager;
 
 
 public class XMLStore implements DataStoreWrapper{
@@ -39,6 +41,62 @@ public class XMLStore implements DataStoreWrapper{
 	private static String getresult = null;
 	private  StatusType dbRequestStatus;
 
+	@Override
+	public List<Pair<String,String>> get(int startRange, int endRange) throws NoSuchAlgorithmException, UnsupportedEncodingException, DOMException
+	{// pass  beginning and end hash range, and it gets all the values in that range in a list of key value pairs. can be used like list.get(index).getKey()/list.get(index).getValue()
+		List<Pair<String,String>> list = new ArrayList<Pair<String,String>>();
+		try {
+			parseDatabase();
+		} catch (SAXException | IOException | ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			setStatus(StatusType.GET_ERROR);
+
+		}
+		if(rootelement==null){
+			getresult = "Key does not exist!!";
+		}
+		else{
+			boolean novalue = true;
+			KVPairs = rootelement.getChildNodes();
+			for(int i = 0; i < KVPairs.getLength(); i++)
+			{
+
+				KVPair = KVPairs.item(i);
+				KVPairChildren = KVPair.getChildNodes();
+				for (int y = 0; y < KVPairChildren.getLength()-1; y++) 
+				{
+					//if(key.equals(KVPairChildren.item(y).getTextContent()))
+					String key =KVPairChildren.item(y).getTextContent();
+					int hashedKey=Manager.hash(key);
+					if((hashedKey>=startRange) && (hashedKey<=endRange))
+					{
+
+						String Value=KVPairChildren.item(y).getNextSibling().getTextContent();
+
+						// found existing key
+						list.add(new Pair(key,Value));
+						novalue = false;
+						setStatus(StatusType.GET_SUCCESS);
+
+
+
+
+
+
+					}
+				}
+
+				if(novalue){
+					getresult = "The key you are looking for does not exist, please try again!";
+					setStatus(StatusType.GET_ERROR);
+				}
+
+			}
+
+
+		}return list;
+	}
 	@Override
 	public synchronized DatabaseResponse put(String key, String value) {
 		// TODO Auto-generated method stub
@@ -119,7 +177,7 @@ public class XMLStore implements DataStoreWrapper{
 		databaseResponse.setValue(value);
 		return databaseResponse;
 	}
-	
+
 
 	@Override
 	public synchronized DatabaseResponse get(String key) {
@@ -181,7 +239,7 @@ public class XMLStore implements DataStoreWrapper{
 		databaseResponse.setMessage(getresult);
 		databaseResponse.setStatus(getStatus());
 		databaseResponse.setKey(key);
-		
+
 
 		return databaseResponse;
 	}
@@ -211,22 +269,22 @@ public class XMLStore implements DataStoreWrapper{
 		System.out.println("created entry");
 
 	}
-	
+
 	public void writeToPersistentStorage() throws TransformerException {
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		Transformer transformer = transformerFactory.newTransformer();
 		DOMSource source = new DOMSource(doc);
 		StreamResult result = new StreamResult(new File("KVStore\\Store.xml"));
 
-		  // Output to console for testing
-	 // result = new StreamResult(System.out);
+		// Output to console for testing
+		// result = new StreamResult(System.out);
 
-	  transformer.transform(source, result);
+		transformer.transform(source, result);
 
-	  System.out.println("Server Persistent Storage Updated!");
-	 
+		System.out.println("Server Persistent Storage Updated!");
 
-		
+
+
 	}
 
 	public StatusType getStatus() {
