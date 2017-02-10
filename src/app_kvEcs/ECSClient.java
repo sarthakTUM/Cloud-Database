@@ -31,7 +31,7 @@ import common.messages.ECSState;
 //import app_kvServer.CacheFIFO2;
 //import app_kvServer.ServerKVStore;
 public class ECSClient {
-
+	private static BufferedReader stdin;
 	//move these variables to another ecs handler class begin
 	static ECSState currentState;
 	//end
@@ -112,7 +112,7 @@ public class ECSClient {
 		}
 	}
 
-
+    
 	public static void failureDetection()
 	{
 		Timer timer = new Timer();
@@ -150,17 +150,36 @@ public class ECSClient {
 	}
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException 
 	{
-
+        //start failure detection and handling logic to execute every 5 mins
 		failureDetection();
-		//SSHClient(1234, "lifo");
-		//SSHClient(1235, "lifo");
-		System.out.println("executed SSH");
+		
+		
 
-		// Grab output and print to display
+		// Grab user input to execute
+		while (true)
+		{
+			String input=stdin.readLine();	
+		    processMessage(new ECSCommandModel(input));
+		}
+
+	   
 
 
-		String sCurrentLine;
-		System.out.println(new File(".").getAbsolutePath());
+	}
+	private static void displayHelp()
+	{
+		StringBuilder helpString = new StringBuilder();
+		
+		helpString.append("ECS commands Library");
+		helpString.append("1. Start/Stop/Shutdown/remove For starting/stopping/shutting/ down all currently active servers or adding/removing random node \n");
+		helpString.append("2. initkvservice: like initkvService 3 10 fifo..for starting 3 servers with fifo strategy with 10 cache size \n");
+		helpString.append("3.add like add 10 fifo, for adding a randomly selected node with specified cache settings to activeServerList \n");
+		helpString.append("4. exit/help..for quitting the application or displaying this help again \n");
+		System.out.println(helpString.toString());
+		
+	}
+	private static void prepareFullMetaDatalist() throws IOException, NumberFormatException, NoSuchAlgorithmException
+	{String sCurrentLine;
 		BufferedReader br = new BufferedReader(new FileReader("ecsconfig.txt"));
 		StringBuilder builder = new StringBuilder();
 		while ((sCurrentLine = br.readLine()) != null) {
@@ -182,26 +201,17 @@ public class ECSClient {
 
 
 		}
-		initKVService(2, 10, "lifo");
-
-		//System.out.println(ActiveServerList.getServerByIndex(0).getName()+ActiveServerList.getServerByIndex(0).getHashValue());
-		//System.out.println(ActiveServerList.getServerByIndex(1).getName()+ActiveServerList.getServerByIndex(1).getHashValue());
-		ActiveServerList.sortHash();
-		ActiveServerList.prepareMetaData();
-		//System.out.println(ActiveServerList.stringify());
-		//ActiveServerList.remove(0);
-		//ActiveServerList.prepareMetaData();
-
-		//ECSCommandModel command = new ECSCommandModel();
-		//command.setInstruction("start");
-		//start(command, ActiveServerList);
-		//System.out.println(ActiveServerList.stringify());
-
-		//processMessage(new ECSCommandModel("add 11 lifo"));
-
 	}
+	
+	/* 
+	The following function handles node failure by removing the current node from the ECS metadata, 
+	updating the new metadata for all the servers, and then add a new node in its place, and send the update the metadata for 
+	all servers in the activeServerList accordingly
+	*/
+	
+	
 	private static void handleFailedNode(int serverByIndex) {
-		//modify the metadata on ecs to reflect the node revoal
+		//logic for handling failed node
 		ActiveServerList.remove(serverByIndex);
 		ActiveServerList.prepareMetaData();
 		metadata=ActiveServerList.stringify();
@@ -226,6 +236,12 @@ public class ECSClient {
 
 	}
 	@SuppressWarnings("unused")
+	
+	/* 
+	The following function handles node failure by removing the current node from the ECS metadata, 
+	updating the new metadata for all the servers, and then add a new node in its place, and send the update the metadata for 
+	all servers in the activeServerList accordingly
+	*/
 	private static void processMessage(ECSCommandModel command) throws NoSuchAlgorithmException, NumberFormatException, IOException{
 
 
@@ -233,10 +249,10 @@ public class ECSClient {
 		//Logging.FILE_LOGGER.debug("Number of tokens greater than 0");
 
 
-		switch(command.getInstruction()){
+		switch(command.getInstruction().toLowerCase()){
 		case "initkvservice":
 			//check if command has the cache size and strategy parameters
-			initKVService(Integer.parseInt(command.getParameters()[1]),Integer.parseInt(command.getParameters()[2]),command.getParameters()[3]);
+			initKVService(Integer.parseInt(command.getParameters()[0]),Integer.parseInt(command.getParameters()[1]),command.getParameters()[2]);
 			break;
 		case "start":
 			start(command,ActiveServerList);
@@ -261,7 +277,15 @@ public class ECSClient {
 
 			removeRandomNode();
 			break;
-
+		case "exit":
+			System.exit(1);
+            break;
+		case "help":
+			displayHelp();
+            break;
+        default:
+        	System.out.println("Invalid Input, please try again");
+        	break;
 		}}
 	private static void addRandomNode(ECSCommandModel command) throws NoSuchAlgorithmException, UnsupportedEncodingException
 	{boolean uniqueServerFound= false;

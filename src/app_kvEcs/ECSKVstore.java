@@ -6,6 +6,9 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import common.messages.*;
@@ -27,6 +30,9 @@ public class ECSKVstore {
 
 	
 	private  static Socket clientSocket;
+	private static ObjectOutputStream oos;
+	private static ObjectInputStream ois;
+
 	private static OutputStream oStream;
 	private static InputStream iStream;
 	private static BufferedInputStream bis;
@@ -68,6 +74,9 @@ public class ECSKVstore {
 
 		iStream = clientSocket.getInputStream();
 		bis = new BufferedInputStream(iStream);
+		oos= new ObjectOutputStream(oStream);
+		oos.flush();
+		ois= new ObjectInputStream(iStream);
 
 		//Logging.FILE_LOGGER.debug("GET Input Stream for the Socket");
 
@@ -104,7 +113,7 @@ public class ECSKVstore {
 
 	}
 
-	public static void put(String message) throws Exception {
+	public static void put(Payload message) throws Exception {
 		// TODO Auto-generated method stub
 		
 		//if(value == null){
@@ -115,15 +124,21 @@ public class ECSKVstore {
 		}*/
 		System.out.println(message);
 		byte[] rawBytes = convertToBytes(message);
-		bos.write(rawBytes, 0, rawBytes.length);
-		bos.write(13);
-		bos.flush();
+		oos.writeObject(message);
+		oos.flush();
 		
 		//receive KVMessage from server.
+		int attempts=0;
+		while(ois.available() == 0 && attempts < 100)
+        {
+            attempts++;
+            Thread.sleep(10);
+        }
 		
-		Thread.sleep(4000);
+		
 		String receivedMessage =  receiveMessage();
 		responseMessage= receivedMessage;
+		
 		System.out.println("RM : " + receivedMessage);
 		
 		//call KVMessage instance with receivedMessage as argument.
@@ -161,9 +176,11 @@ public class ECSKVstore {
 		return rawBytes;
 	}
 	
-	public static String receiveMessage(){
+	public static String receiveMessage() throws ClassNotFoundException, IOException{
+Payload payload=(Payload)ois.readObject();
+return payload.getValue();
 
-		List<Integer> receivedMessageInBytes = new ArrayList<>();
+		/*List<Integer> receivedMessageInBytes = new ArrayList<>();
 		String receivedMessageString = null;
 
 		try {
@@ -193,6 +210,7 @@ public class ECSKVstore {
 		}
 		System.out.println("RMC : " + receivedMessageString);
 		return receivedMessageString;
+		*/
 	}
 	
 	private static String convertIntegerToString(List<Integer> receivedMessageInBytes){
