@@ -1,7 +1,11 @@
+/**
+ * @author Sarthak Gupta
+ */
 package app_kvClient;
 
 //import common.messages.KVMessage;
 
+import java.io.File;
 import java.io.IOException;
 
 import app_kvClient.Response.ResponseResult;
@@ -11,11 +15,12 @@ import app_kvServer.ServerModel;
 import client.KVStore;
 import client.Metadata;
 import common.messages.KVMessage;
+import common.messages.KVMessage.StatusType;
 
 /*
  * TODO for all messages, extract the valid server from metadata.
  */
-public class ServerMessageHandler extends Handler{
+public class ServerMessageHandler implements Handler{
 
 	private static final String LOG = "LOG:SMHANDLR:";
 
@@ -37,7 +42,7 @@ public class ServerMessageHandler extends Handler{
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				isConnected = false;
-				
+
 				e.printStackTrace();
 			}
 			finally{
@@ -52,7 +57,7 @@ public class ServerMessageHandler extends Handler{
 		case "PUT":
 			String key = serverCommand.getCommandAttributes()[1];
 			String value = serverCommand.getCommandAttributes()[2];
-			
+
 			System.out.println(LOG + "executing PUT: " + key + "-" + value);
 			try {
 				/*
@@ -85,37 +90,31 @@ public class ServerMessageHandler extends Handler{
 						response = new Response(ResponseSource.SERVER, ResponseResult.SUCCESS, "PUT request successful. Tuple updated : " + key + ":" + value);
 						break;
 					case SERVER_NOT_RESPONSIBLE:
-						
+
 						/*
-						 * TODO retry workflow:
+						 * retry workflow:
 						 * 1. Disconnect from old server
 						 * 2. update metadata file
 						 * 3. find new server
 						 * 4. processCommand() with connect to new server
 						 * 5. PUT to new server
 						 */
-						
-						boolean isUpdated = Metadata.updateMetadata(fetchMetadata(kvMessage));
-						if(isUpdated){
-							ServerModel serverConfig = new ServerContainerModel().getResponsibleServer(key);
-							/*
-							 * initiate a new PUT request with this serverConfig.
-							 */
-							if(serverConfig != null){
-								/*
-								 * TODO call processCommand() with a new ServerCommand of connect
-								 */
+						ClientSystem.getMetadata().cnvMetaToServList(kvMessage.getValue());
+
+
+						ServerModel serverConfig = new ServerContainerModel().getResponsibleServer(key);
+						/*
+						 * initiate a new PUT request with this serverConfig.
+						 */
+						if(serverConfig != null){
+							
+							response = processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{serverConfig.getIP(), String.valueOf(serverConfig.getPort())}, "CONNECT", "SERVER"));
+							if(response.getResponseResult() == ResponseResult.SUCCESS){
 								
-								//uncomment the below line when serverModel is incorporated.
-								response = processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{serverConfig.getIP(), String.valueOf(serverConfig.getPort())}, "CONNECT", "SERVER"));
-								if(response.getResponseResult() == ResponseResult.SUCCESS){
-									/*
-									 * TODO call processCommand() with a new PUT command
-									 */
-									processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{key, value}, "PUT", "SERVER"));
-								}
+								processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{key, value}, "PUT", "SERVER"));
 							}
 						}
+
 						break;
 					case SERVER_STOPPED:
 						break;
@@ -123,7 +122,7 @@ public class ServerMessageHandler extends Handler{
 						break;
 					default:
 						break;
-					
+
 					}
 				}
 			} catch (Exception e) {
@@ -133,16 +132,27 @@ public class ServerMessageHandler extends Handler{
 				e.printStackTrace();
 			}
 			break;
-			
+
 		case "SYNC":
 			try {
-				KVMessage kvMessage = kvStore.sync(serverCommand.getCommandAttributes()[1]);
+				String fileName = serverCommand.getCommandAttributes()[1];
+				File f = new File(ClientSystem.clientSyncFolderName + "//" + fileName);
+				if(!f.exists()){
+					response = new Response(ResponseSource.CLIENT, ResponseResult.FAIL, "File Doesnt exist:" + fileName);
+				}
+				else{
+					KVMessage kvMessage = kvStore.sync(serverCommand.getCommandAttributes()[1]);
+					if(kvMessage.getStatus() == StatusType.SYNC_COMPLETE){
+						response = new Response(ResponseSource.SERVER, ResponseResult.SUCCESS, "File Synced:" + fileName + " Summary: " + kvMessage.getValue());
+					}
+				}
+				
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			break;
-			
+
 		case "GET":
 			/*
 			 * TODO receive KVMessage and based on the status, build a response, execute proper action.
@@ -172,7 +182,7 @@ public class ServerMessageHandler extends Handler{
 					case PUT_UPDATE:
 						break;
 					case SERVER_NOT_RESPONSIBLE:
-						
+
 						/*
 						 * TODO retry workflow:
 						 * 1. Disconnect from old server
@@ -181,7 +191,7 @@ public class ServerMessageHandler extends Handler{
 						 * 4. processCommand() with connect to new server
 						 * 5. PUT to new server
 						 */
-						
+
 						boolean isUpdated = Metadata.updateMetadata(fetchMetadata(kvMessage));
 						if(isUpdated){
 							ServerModel serverConfig = new ServerContainerModel().getResponsibleServer(key);
@@ -192,7 +202,7 @@ public class ServerMessageHandler extends Handler{
 								/*
 								 * TODO call processCommand() with a new ServerCommand of connect
 								 */
-								
+
 								//uncomment the below line when serverModel is incorporated.
 								response = processCommand(new ServerCommand("SERVER", new ServerMessageHandler(), new String[]{serverConfig.getIP(), String.valueOf(serverConfig.getPort())}, "CONNECT", "SERVER"));
 								if(response.getResponseResult() == ResponseResult.SUCCESS){
@@ -222,13 +232,13 @@ public class ServerMessageHandler extends Handler{
 		case "DISCONNECT":
 			kvStore.disconnect();
 			break;
-			
-			default:
-				// TODO error message
+
+		default:
+			// TODO error message
 		}
 		return response;
 	}
-	
+
 	private byte[] fetchMetadata(KVMessage kvMessage){
 		/*
 		 * TODO fetch optinalField from the payload
@@ -236,7 +246,7 @@ public class ServerMessageHandler extends Handler{
 		return null;
 	}
 	public boolean updateMetadataFile(KVMessage kvMessage){
-		
+
 		boolean isUpdated = false;
 		/*
 		 * TODO implement a function to fetch metadata from the kvMessage
@@ -249,5 +259,5 @@ public class ServerMessageHandler extends Handler{
 		 */
 		return isUpdated;
 	}
-	
+
 }

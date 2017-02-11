@@ -1,3 +1,7 @@
+/**
+ * @author Sarthak Gupta
+ */
+
 package app_kvClient;
 
 import java.io.BufferedReader;
@@ -6,6 +10,11 @@ import java.io.InputStreamReader;
 
 import common.messages.SystemStates;
 
+/*
+ * @author Sarthak
+ * KVClient application is responsible for taking in input from the command line and
+ * passing it to controller for further processing.
+ */
 
 public class KVClient {
 
@@ -26,7 +35,7 @@ public class KVClient {
 			System.out.println(LOG + "system state after init commands: " + clientSystem.getCurrState());
 		}
 		
-		//System.out.println(LOG + "the valid commands [command=type] are : " + CommandController.getValidCommands());
+		
 		while(!stop){
 			stdin = new BufferedReader(new InputStreamReader(System.in));
 			System.out.print(PROMPT);
@@ -44,6 +53,10 @@ public class KVClient {
 		}
 	}
 	
+	/**
+	 * @return the polymorphic Command Model that is a representation of
+	 * 			particular type of commands, Ex: ServerCommand, ClientCommand.
+	 */
 	private CommandModel buildCommand(BufferedReader stdin){
 		CommandModel command = null;
 		try {

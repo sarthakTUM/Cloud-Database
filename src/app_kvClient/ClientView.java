@@ -1,3 +1,7 @@
+/**
+ * @author Sarthak Gupta
+ */
+
 package app_kvClient;
 
 public class ClientView {
@@ -5,6 +9,10 @@ public class ClientView {
 	
 	private final String PROMPT = "SERVER>>";
 	private static final String LOG = "LOG:CLNTVIEW:";
+	
+	/**
+	 * prints the response that it receives to the Client console.
+	 */
 	public void printResponse(){
 		System.out.println(LOG + "printResponse() called");
 		System.out.println(PROMPT + "response");

@@ -37,7 +37,7 @@ public class KVStore implements KVCommInterface {
 	public KVStore(String address, int port) {
 		System.out.println(LOG + "initialized system with : " + address + ":" + port);
 		this.serverAddress = "127.0.0.1";
-		this.serverPort = 1234;
+		this.serverPort = port;
 	}
 
 	@Override
@@ -162,11 +162,21 @@ public class KVStore implements KVCommInterface {
 				/*
 				 * put the instructionStream on the outputStream
 				 */
-				Payload instructionStreamPayload = new Payload(fileName, "null", "SYNC_IS");
+				Payload instructionStreamPayload = new Payload(fileName, String.valueOf(DeltaSync.totalDataTransferred), "SYNC_IS");
 				instructionStreamPayload.setSource(messageSource);
 				instructionStreamPayload.setStatusType(StatusType.SYNC_IS);
 				instructionStreamPayload.setInstructionStream(instructionStream);
+				
 				objectOutputStream.writeObject(instructionStreamPayload);
+				
+				while(ClientSocketListener.syncProtocolSecondResponse != true){
+					proceed = false;
+				}
+				proceed = true;
+				if(proceed){
+					payload = receiveMessage();
+					
+				}
 
 			}
 			else{

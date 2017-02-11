@@ -1,3 +1,7 @@
+/**
+ * @author Sarthak Gupta
+ */
+
 package app_kvClient;
 
 import java.util.regex.Matcher;
@@ -19,14 +23,6 @@ public class ServerCommand extends CommandModel {
 	}
 	public Response checkValidity(){
 		
-		/**
-		 * TODO add logic for checking validity of a Server command.
-		 * Checks can include length, proper command, etc...
-		 */
-		
-		/*
-		 * TODO add cases for different types of Server commands.
-		 */
 		Boolean valid = false;
 		Response response = new Response(null, ResponseResult.FAIL, null);
 		switch(this.getCommandInstruction()){

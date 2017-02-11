@@ -1,3 +1,7 @@
+/**
+ * @author Sarthak Gupta and Martin Jergler
+ */
+
 package app_kvServer;
 
 import java.io.IOException;
@@ -32,6 +36,9 @@ public class KVServer extends Thread {
 		
 	}
 	
+	/**
+	 * spins the server based on the initialization configuration.
+	 */
 	public void spin(){
 		try {
 			serverSocket = new ServerSocket(this.port);
@@ -56,7 +63,6 @@ public class KVServer extends Thread {
 					ClientConnection clientConnection = new ClientConnection(client);
 					new Thread(clientConnection).start();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				

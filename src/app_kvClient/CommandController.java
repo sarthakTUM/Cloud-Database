@@ -1,3 +1,10 @@
+/**
+ * @author Sarthak Gupta
+ * CommandController is the Controller part of the MVC architecture,
+ * and it is responsible for the interaction between Client View and the Models
+ */
+
+
 package app_kvClient;
 
 import java.util.HashMap;
@@ -16,6 +23,9 @@ public class CommandController {
 	private Response response = null;
 	private ClientSystem clientSystem;
 	
+	/**
+	 * Initialized the valid commands that Client application can accept.
+	 */
 	public static void initializeCommands(){
 		
 		
@@ -25,12 +35,14 @@ public class CommandController {
 		validCommand.put("GET", "SERVER");
 		validCommand.put("DISCONNECT", "SERVER");
 		validCommand.put("SYNC", "SERVER");
-		
-		/*
-		 * TODO if there are no exceptions, then update the ClientSystem variable.
-		 */
+
 	}
 	
+	/**
+	 * 
+	 * @param cmdLine - gets the command line entered in the Client View by the User.
+	 * @return the CommandModel based on the type of command.
+	 */
 	public static CommandModel buildCommand(String cmdLine){
 		
 		CommandModel commandModel = null;
@@ -51,6 +63,13 @@ public class CommandController {
 	public CommandController(){
 		System.out.println(LOG + "default constructor");
 	}
+	
+	/**
+	 * 
+	 * @param command Command built by the Command Factory
+	 * @param view - to which the controller is attached to
+	 * @param clientSystem - the system pertaining to current Client.
+	 */
 	public CommandController(CommandModel command, ClientView view, ClientSystem clientSystem){
 		
 		System.out.println(LOG + "parameterized constructor called");
@@ -63,6 +82,10 @@ public class CommandController {
 		
 	}
 	
+	/**
+	 * starts the processing of the Command, and gets the response after the command
+	 * is processed.
+	 */
 	public void initProcessing(){
 		
 		System.out.println(LOG + "in initProcessing()");
@@ -116,6 +139,9 @@ public class CommandController {
 		
 	}
 	
+	/**
+	 * updates the view to which the controller is attached.
+	 */
 	public void updateView(){
 		// TODO get KVMessage from handler and pass it to printResponse
 		if(this.command == null){
@@ -127,10 +153,22 @@ public class CommandController {
 		// TODO define printResponse(Response)
 	}
 	
+	/**
+	 * 
+	 * @return valid Commands for the Client application
+	 */
 	public static HashMap<String, String> getValidCommands(){
 		return validCommand;
 	}
 	
+	
+	/**
+	 * 
+	 * @param command: the command for which the system state has to be checked
+	 * 			whether the command can be entered at current System State or not.
+	 * @return Response: from the ClientSystem about whether the command entered
+	 * 			is valid under the current system state or not.
+	 */
 	private Response checkSystemState(CommandModel command){
 		
 		response = new Response(ResponseSource.CLIENT, ResponseResult.SUCCESS, "System state check passed");

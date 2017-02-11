@@ -17,7 +17,8 @@ public interface KVMessage {
     	SERVER_NOT_RESPONSIBLE,  /* Request not successful, server not responsible for key */
     	SYNC,
     	FILE_EXISTS,
-    	SYNC_IS
+    	SYNC_IS,
+    	SYNC_COMPLETE
     }
     public enum MessageSource{
     	CLIENT,

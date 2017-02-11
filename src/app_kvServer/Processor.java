@@ -1,3 +1,8 @@
+/**
+ * @author Sarthak Gupta
+ * Processor is responsible for processing the requests sent by Job Handler.
+ */
+
 package app_kvServer;
 
 import java.io.File;
@@ -24,9 +29,6 @@ public class Processor {
 
 	private static final String LOG = "LOG:PROCESOR:";
 	
-	/*
-	 * TODO for each message, check server's state first, and also, update state as required.
-	 */
 	public static DatabaseResponse process(Payload payload){
 		
 		System.out.println(LOG + "processing payload");
@@ -36,7 +38,7 @@ public class Processor {
 		DatabaseResponse databaseResponse = null;
 		switch(messageSource){
 		case CLIENT:
-			//processClientMessage(payload);
+
 			boolean serverResponsible = true;
 			//serverResponsible = checkServerResponsibility(payload.getKey());
 			if(!serverResponsible){
@@ -93,22 +95,17 @@ public class Processor {
 				
 				break;
 			case "SYNC":
-				File directory = new File(String.valueOf("SarthakGupta"));
-			    if (! directory.exists()){
-			        directory.mkdir();
-			        // If you require it to make the entire directory path including parents,
-			        // use directory.mkdirs(); here instead.
+				String fileName = payload.getKey();
+				File serverFile = new File(ServerSystem.serverSyncFolderName + "//" + fileName);
+			    if (! serverFile.exists()){
+			        /*
+			         * TODO send the message that file doesn't exist.
+			         */
 			    }
 			    else{
-			    	String fileName = payload.getKey();
-			    	File f = new File("SarthakGupta//" + fileName);
-			    	if(f.exists() && !f.isDirectory()) { 
-			    	    // do something
-			    		/*
-			    		 * TODO create SCT of that file.
-			    		 */
+			    	if(!serverFile.isDirectory()) { 
 			    		System.out.println(LOG + "<file> exists and it is not a directory: " + fileName);
-			    		List<Long> serverChecksumTable = DeltaSync.createSCT(f);
+			    		List<Long> serverChecksumTable = DeltaSync.createSCT(serverFile);
 			    		databaseResponse = new DatabaseResponse();
 			    		databaseResponse.setReuqestType(DBCommand.SYNC);
 			    		databaseResponse.setKey(payload.getKey());
@@ -121,22 +118,37 @@ public class Processor {
 			    		
 			    		
 			    	}
-			    	else{
-			    		/*
-			    		 * TODO file needs complete replication.
-			    		 */
-			    	}
+			    	
 			    }
 				break;
 			case "SYNC_IS":
-				String fileName = payload.getKey();
-				File f = new File("SarthakGupta//" + fileName);
-				try {
-					DeltaSync.constructFile(payload.getInstructionStream(), f);
-				} catch (IOException e2) {
-					// TODO Auto-generated catch block
-					e2.printStackTrace();
-				}
+				String fileName1 = payload.getKey();
+				int totalDataInIS = (int)Integer.valueOf(payload.getValue());
+				File serverFile1 = new File(ServerSystem.serverSyncFolderName + "//" + fileName1);
+			    if (! serverFile1.exists()){
+			        /*
+			         * TODO send the message that file doesn't exist.
+			         */
+			    }
+			    else{
+			    	if(!serverFile1.isDirectory()) { 
+			    		try {
+							DeltaSync.constructFile(payload.getInstructionStream(), serverFile1);
+							databaseResponse = new DatabaseResponse();
+							databaseResponse.setResult(DBRequestResult.SUCCESS);
+							databaseResponse.setKey(fileName1);
+							databaseResponse.setReuqestType(DBCommand.SYNC);
+							databaseResponse.setValue("total data transferred: " + (DeltaSync.totalDataTransferred + totalDataInIS)  + " Bytes" + " and total data saved: " + (serverFile1.length() - (DeltaSync.totalDataTransferred + totalDataInIS)) + " Bytes");
+							databaseResponse.setStatus(StatusType.SYNC_COMPLETE);
+							
+						} catch (IOException e2) {
+							// TODO Auto-generated catch block
+							e2.printStackTrace();
+						}
+			    	}
+			    }
+				
+				
 				default:
 					break;
 			}
@@ -169,20 +181,6 @@ public class Processor {
 				break;
 			case "ADD":
 				
-				/*
-				 * LOGIC:
-				 * 1. Pass current IP and port to getServerModel and get the ServerModel which is the identity of current server and store it as a global identity.
-				 * 2. call getNextNNode(ServerModel, 1) which will return ServerContainerModel.
-				 *
-				 * 3. ServerModel node = serverContainerModel.getServerByIndex(0);
-				 * 4. call get(start, end) with start and end range of node(3) which will return List<K,V> of current Server to be transferred to node(3).
-				 * 5. connect to node from (3) 
-				 * 6. pass the List to node(3).
-				 * 7. call put(start, end) with the same range as retreived in (4): used for deletion.
-				 * For this, get node number of this.server by 
-				 * 3. 
-				 */
-				
 				ServerContainerModel nextNNodes = new ServerContainerModel().getNextNnodes(ServerSystem.getIdentity(), 1);
 				ServerModel node = nextNNodes.getServerByIndex(0);
 				try {
@@ -190,7 +188,7 @@ public class Processor {
 					ReplicationService.replicate(records, node);
 				} catch (NoSuchAlgorithmException
 						| UnsupportedEncodingException | DOMException e1) {
-					// TODO Auto-generated catch block
+					
 					e1.printStackTrace();
 				}
 				

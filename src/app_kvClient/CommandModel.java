@@ -1,3 +1,8 @@
+/**
+ * @author Sarthak Gupta
+ * Represents the Command.
+ */
+
 package app_kvClient;
 
 public class CommandModel {
@@ -12,6 +17,14 @@ public class CommandModel {
 		
 	}
 	
+	/**
+	 * 
+	 * @param messageType: Client or Server
+	 * @param handler: Relevant Handler for the Command Type
+	 * @param commandAttributes: Attributes for the command (Keym Value, etc)
+	 * @param commandInstruction: GET, PUT, SYNC, etc.
+	 * @param messageSource: from where to message is originating.
+	 */
 	public CommandModel(String messageType, Handler handler, String[] commandAttributes, String commandInstruction, String messageSource){
 		this.setMessageType(messageType);
 		this.setHandler(handler);
@@ -20,13 +33,18 @@ public class CommandModel {
 		this.setMessageSource(messageSource);
 	}
 
+	/**
+	 * checks the validity of the command
+	 * @return whether the command is valid or not.
+	 */
 	public Response checkValidity(){
 		
 		return null;
 	}
 	
-	
-	// TODO generate getters and setters
+	/*
+	 * Getters and Setters.
+	 */
 	public void setMessageType(String messageType){
 		
 		this.messageType = messageType;

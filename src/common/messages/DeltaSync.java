@@ -1,3 +1,7 @@
+/**
+ * @author Sarthak Gupta
+ */
+
 package common.messages;
 
 import java.io.File;
@@ -10,14 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.CRC32;
 
+import app_kvServer.ServerSystem;
+
 public class DeltaSync {
 
+	
+	private static final String LOG = "LOG:DLTASYNC:";
 	static byte[] serverBytes;
 	static long fileSize;
 	static long clientFileSize;
 	static int blocksMatched = 0;
 	static int filePointer = 0;
-	static int totalDataTransferred = 0;
+	
 	static int unmatchedBytes = 0;
 
 	static int defaultChunkSize = 700;
@@ -29,10 +37,14 @@ public class DeltaSync {
 	static List<Long> serverChecksumTable = new ArrayList<Long>();
 
 	static byte[] clientBytes;
+	
+	public static int totalDataTransferred = 0;
+	public static int totalDataSaved;
 
 	static CRC32 crc32 = new CRC32();
 	
 	public static List<Long> createSCT(File file){
+		System.out.println(LOG + "creating Server Checksum table for file: " + file.getName());
 		fileSize = file.length();
 		System.out.println("IFL:" + file.length());
 
@@ -68,11 +80,14 @@ public class DeltaSync {
 			chunksPut++;
 		}
 		
+		totalDataTransferred += (serverChecksumTable.size() * 4);
 		return serverChecksumTable;
 
 	}
 	
 	public static List<Map.Entry<Integer, Long>> getInstructionStream(List<Long> SCT, File clientFile){
+		
+		System.out.println(LOG + "Creating Instruction Stream...");
 		clientFileSize = clientFile.length();
 		long blockHash;
 		int skipCount = 0;
@@ -168,7 +183,7 @@ public class DeltaSync {
 		byte[] lastBlock = Arrays.copyOfRange(clientBytes, (int) filePointer, clientBytes.length);
 		long lastHash = getCRC32Hash(lastBlock);
 		if(SCT.contains(lastHash)){
-			System.out.println("LBM");
+			//System.out.println("LBM");
 			java.util.Map.Entry<Integer, Long> instruction = new java.util.AbstractMap.SimpleEntry<>(1,
 					(long)SCT.indexOf(lastHash));
 			instructionStream.add(instruction);
@@ -176,7 +191,7 @@ public class DeltaSync {
 			totalDataTransferred += 5;
 		}
 		else{
-			System.out.println("last not matched");
+			//System.out.println("last not matched");
 			for(long j=filePointer; j<clientBytes.length; j++){
 				java.util.Map.Entry<Integer, Long> instruction = new java.util.AbstractMap.SimpleEntry<>(0,
 						(long)clientBytes[(int)j]);
@@ -191,14 +206,16 @@ public class DeltaSync {
 	public static void constructFile(List<Map.Entry<Integer, Long>> instructionStream, File f) throws IOException{
 		//RandomAccessFile raf = new RandomAccessFile("C:\\test.txt", "rw");
 
+		System.out.println(LOG + "Constructing the file..");
+		FileInputStream fis = new FileInputStream(f);
+		FileOutputStream os = new FileOutputStream(ServerSystem.serverSyncFolderName + "//" + f.getName(), true);
 		for(int index=0; index<instructionStream.size(); index++){
-			System.out.println("in loop");
+			//System.out.println("in loop");
 			if(instructionStream.get(index).getKey() == 1){
 				/*
 				 * TODO copy the block in new file.
 				 */
-				FileInputStream fis = new FileInputStream(f);
-				FileOutputStream os = new FileOutputStream("C:\\Users\\Sarthak\\workspace\\Cloud Database\\newCopy.txt", true);
+				
 				byte[] blockBytes = new byte[defaultChunkSize];
 				long blockRef = instructionStream.get(index).getValue();
 				fis.skip(blockRef * defaultChunkSize);
@@ -208,27 +225,23 @@ public class DeltaSync {
 					blockBytes[bytesRead] = (byte) c;
 					bytesRead++;
 					if(bytesRead == defaultChunkSize){
-						System.out.println("breaking: "+ bytesRead + " " + blockBytes.length);
+						//System.out.println("breaking: "+ bytesRead + " " + blockBytes.length);
 						break;
 					}
 						
 					
 				}
 				if(c == -1){
-					System.out.println("c == -1" + "BR: " + bytesRead);
+					//System.out.println("c == -1" + "BR: " + bytesRead);
 				}
 				os.write(blockBytes);
-				os.close();
-				fis.close();
+
 				
 				
 			}
 			else{
-				FileInputStream fis = new FileInputStream(f);
-				FileOutputStream os = new FileOutputStream("C:\\Users\\Sarthak\\workspace\\Rsync\\newCopy.txt", true);
 				os.write(instructionStream.get(index).getValue().intValue());
-				fis.close();
-				os.close();
+
 			}
 		}
 	}
@@ -247,7 +260,6 @@ public class DeltaSync {
 		while((c = fis.read()) != -1){
 			byteArray[index++] = (byte) c;
 		}
-		
-		fis.close();
+
 	}
 }

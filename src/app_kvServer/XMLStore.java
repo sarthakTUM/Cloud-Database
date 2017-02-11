@@ -247,7 +247,7 @@ public class XMLStore implements DataStoreWrapper{
 	private static void parseDatabase() throws SAXException, IOException, ParserConfigurationException {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		docBuilder = docFactory.newDocumentBuilder();
-		doc = docBuilder.parse("KVStore\\Store.xml");
+		doc = docBuilder.parse("src\\app_kvServer\\Store.xml");
 		rootelement = doc.getFirstChild();
 
 	}

@@ -1,3 +1,9 @@
+/**
+ * @author Sarthak Gupta
+ * A thread that constantly polls from the job Queue to fetch the latest requests that server
+ * received.
+ */
+
 package app_kvServer;
 
 import java.util.Queue;
@@ -13,6 +19,12 @@ public class JobHandler implements Runnable{
 	private Long jobHandlerID;
 	private static final String LOG = "LOG:JOBHNDLR:";
 	
+	/**
+	 * 
+	 * @param clientID The client to which this Job Handler will be attached to.
+	 * @param jobQueue the queue which is associated with the client, which will be polled by the Job Handler
+	 * @param outputQueue The queue to which Handler will reroute the outputs by the server.
+	 */
 	public JobHandler(Long clientID, Queue<Payload> jobQueue, Queue<DatabaseResponse> outputQueue){
 		System.out.println(LOG + "Creating job handler for the client : " + clientID);
 		this.clientID = clientID;
@@ -35,10 +47,7 @@ public class JobHandler implements Runnable{
 				Payload payload = jobQueue.poll();
 				System.out.println(LOG + "polled a payload from JID: " + jobHandlerID);
 				if(payload != null){
-					/*
-					 * TODO 
-					 * Add a timeOut if the payload is taking time to process.
-					 */
+	
 					DatabaseResponse response = Processor.process(payload);
 					if(response != null){
 						
@@ -52,7 +61,6 @@ public class JobHandler implements Runnable{
 					}
 				}
 			}
-			//System.out.println(LOG + "jobQueue empty");
 		}
 	}
 

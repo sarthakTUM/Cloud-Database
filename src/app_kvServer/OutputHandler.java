@@ -1,3 +1,8 @@
+/**
+ * @author Sarthak Gupta
+ * Thread that polls the output queue for latest responses by the server.
+ */
+
 package app_kvServer;
 
 import java.io.IOException;
@@ -16,6 +21,12 @@ public class OutputHandler implements Runnable{
 	private ObjectOutputStream objectOutputStream;
 	private static final String LOG = "LOG:OUTPHNDLR:";
 	
+	/**
+	 * 
+	 * @param clientID to which this handler is bounded to.
+	 * @param outputQueue the queue to which client socket is responsible to fetch reponse from
+	 * @param objectOutputStream the output stream to flush the output from queue to respective client socket.
+	 */
 	public OutputHandler(Long clientID, Queue<DatabaseResponse> outputQueue, ObjectOutputStream objectOutputStream){
 		System.out.println(LOG + "Creating job handler for the client : " + clientID);
 		this.clientID = clientID;
@@ -39,30 +50,20 @@ public class OutputHandler implements Runnable{
 				DatabaseResponse response = outputQueue.poll();
 				System.out.println(LOG + "polled a payload from OID: " + outputHandlerId);
 				if(response != null){
-					/*
-					 * TODO 
-					 * Add a timeOut if the payload is taking time to process.
-					 */
+
 					System.out.println(LOG + "message on outputQueue for CID: " + this.clientID);
-
-					
-
-
 					Payload payload = new Payload(response);
-					//if(payload.getRequestType() == "SYNC"){
-					
 					
 					try {
 						objectOutputStream.writeObject(payload);
 						objectOutputStream.flush();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
+
 						e.printStackTrace();
 					}
 					System.out.println(LOG + "payload flushed to client");
 				}
 			}
-			//System.out.println(LOG + "jobQueue empty");
 		}
 	}
 

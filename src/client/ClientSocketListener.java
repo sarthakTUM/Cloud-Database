@@ -23,6 +23,7 @@ public class ClientSocketListener extends Thread implements SocketListener{
 	private static final int DROP_SIZE = 1024 * BUFFER_SIZE;
 	private volatile Payload payload = null;
 	public volatile static boolean syncProtocolFirstResponse = false; 
+	public volatile static boolean syncProtocolSecondResponse = false; 
 	
 	public ClientSocketListener(Socket clientSocket, InputStream inputStream, ObjectInputStream objectInputStream) throws IOException {
 		
@@ -78,6 +79,9 @@ public class ClientSocketListener extends Thread implements SocketListener{
 			payload = (Payload) objectInputStream.readObject();
 			if(payload.getStatus() == StatusType.FILE_EXISTS){
 				syncProtocolFirstResponse = true;
+			}
+			if(payload.getStatus() == StatusType.SYNC_COMPLETE){
+				syncProtocolSecondResponse = true;
 			}
 			//}
 

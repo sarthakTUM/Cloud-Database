@@ -1,3 +1,8 @@
+/**
+ * @author Sarthak Gupta
+ * Models the response received after processing of request by the Server.
+ */
+
 package app_kvServer;
 
 import java.io.Serializable;
@@ -9,10 +14,7 @@ import common.messages.KVMessage.StatusType;
 
 
 public class DatabaseResponse implements Serializable{
- 
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	private DBCommand reuqestType;
 	private DBRequestResult result;
@@ -24,9 +26,18 @@ public class DatabaseResponse implements Serializable{
 	private String value;
 	private List<Long> serverChecksumTable;
 	
+	/**
+	 * Gets the tye of request
+	 * @return The command supported by the Database
+	 */
 	public DBCommand getReuqestType() {
 		return reuqestType;
 	}
+	
+	/**
+	 * 
+	 * @param reuqestType the command server suppports.
+	 */
 	public void setReuqestType(DBCommand reuqestType) {
 		this.reuqestType = reuqestType;
 	}

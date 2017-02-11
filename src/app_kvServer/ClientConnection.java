@@ -1,3 +1,7 @@
+/**
+ * @author Sarthak Gupta
+ */
+
 package app_kvServer;
 
 import java.io.IOException;
@@ -17,7 +21,6 @@ import common.messages.Payload;
 
 public class ClientConnection implements Runnable, SocketListener{
 
-	//private static Logger logger = Logger.getRootLogger();
 	private final static String LOG = "LOG:CLNTCONN:";
 	private boolean isOpen;
 	private static final int BUFFER_SIZE = 1024;
@@ -36,6 +39,10 @@ public class ClientConnection implements Runnable, SocketListener{
 	private  Queue<DatabaseResponse> outputQueue;
 	private  Queue<Payload> jobQueue;
 
+	/**
+	 * Initialized the Client Connection
+	 * @param clientSocket the client Socket from which the connection arrived.
+	 */
 	public ClientConnection(Socket clientSocket) {
 		System.out.println(LOG + "new connection arrived from : " + clientSocket.getLocalSocketAddress());
 		this.clientSocket = clientSocket;
@@ -53,16 +60,11 @@ public class ClientConnection implements Runnable, SocketListener{
 			inputStream = clientSocket.getInputStream();
 			objectOutputStream = new ObjectOutputStream(this.clientSocket.getOutputStream());
 
-			//synchronized (this) {
 			objectOutputStream.flush();
-			//}
-
-
-			//objectOutputStream.close();
 
 			objectInputStream = new ObjectInputStream(this.clientSocket.getInputStream());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		
 			e.printStackTrace();
 		}
 
@@ -102,27 +104,7 @@ public class ClientConnection implements Runnable, SocketListener{
 						System.out.println(LOG + "payload could not be pushed to the queue of <CID>: " + this.clientID);
 					}
 				}
-				//System.out.println(LOG + "here");
-				
-					
-				
-					//}
-					/*
-					 * TODO check the payload status, if the request can be re-issued at server end itself.
-					 */
 
-
-					/*else{
-						byte[] serializedMessage = new Message(payload).serializeMessage();
-						if(outputStream != null){
-							outputStream.write(serializedMessage);
-							outputStream.write(13);
-							outputStream.flush();
-						}
-					}*/
-
-
-				
 			}
 		} catch (IOException e) {
 
@@ -133,33 +115,25 @@ public class ClientConnection implements Runnable, SocketListener{
 
 	@Override
 	public void handleStatus(SocketState socketState) {
-		// TODO Auto-generated method stub
+
 
 	}
 
 
 	@Override
 	public Payload receiveMessage() throws IOException {
-		// TODO Auto-generated method stub
+		
 		Payload payload = null;
 
-		//if(objectInputStream.available() != 0){
-		/*
-		 * TODO data is available, read it.
-		 */
 		try {
-			//synchronized (this) {
+			
 			payload = (Payload) objectInputStream.readObject();
-			//}
-
 
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 
-
-		//}
 		return payload;
 		
 	}

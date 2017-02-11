@@ -1,5 +1,6 @@
 package app_kvServer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ public class ServerSystem {
 	private static ServerContainerModel replicatedServer;
 	private static boolean isReplicationEnabled;
 	private static int replicationCount;
+	public static String serverSyncFolderName = "ServerSyncFolder";
 	
 	
 	private static ServerContainerModel metadata;
@@ -57,6 +59,11 @@ public class ServerSystem {
 		
 		System.out.println(LOG + "initializing system states..");
 		isRunning = true;
+		
+		File serverFolder = new File(serverSyncFolderName);
+		if(!serverFolder.exists()){
+			serverFolder.mkdir();
+		}
 		
 		isReplicationEnabled = false;
 		replicationCount = 2;

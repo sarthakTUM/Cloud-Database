@@ -1,18 +1,25 @@
+/**
+ * @author Sarthak Gupta
+ */
+
 package app_kvClient;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-
-
 import app_kvServer.ServerContainerModel;
+
 import common.messages.SystemStates;
 
 public class ClientSystem {
 
 	private static final String LOG = "LOG:CLNTSYST:";
+	public static final String clientSyncFolderName = "ClientSyncFiles";
+	File clientFolder = new File(clientSyncFolderName);
+	
 
 	private static ServerContainerModel metadata = new ServerContainerModel();
 
@@ -36,6 +43,11 @@ public class ClientSystem {
 	Condition connect = new Condition("connectionSuccess");
 	Condition request = new Condition("requestSent");
 
+	/**
+	 * Initialized the Client System with the following:
+	 * 1. State Machine responsible for maintaing the Finite State Machine attached
+	 * 		to Client Application.
+	 */
 
 	public void initialize(){
 		System.out.println(LOG + "initializing system");
@@ -48,9 +60,17 @@ public class ClientSystem {
 
 		stateMachine = new StateMachine(initialized, transitions);
 		
-		//this.isInit = true;
+		if(!clientFolder.exists()){
+			clientFolder.mkdir();
+		}
 
 	}
+	
+	/**
+	 * 
+	 * @param toState: the next state to which system wants to make transition to.
+	 * @return whether the transition is valid or not
+	 */
 	public boolean isValidTransition(State toState){
 
 		/*
@@ -87,6 +107,9 @@ public class ClientSystem {
 		return valid;
 	}
 	
+	/**
+	 * updates the system state based on current system state and set of Conditions.
+	 */
 	public void updateState(){
 		State curr = stateMachine.getCurrent();
 		System.out.println(LOG + "current system state: " + curr.getState());
@@ -116,6 +139,11 @@ public class ClientSystem {
 		}
 	}
 	
+	
+	/**
+	 * 
+	 * @return the current System state.
+	 */
 	public String getCurrState(){
 		return stateMachine.getCurrent().getState().toString();
 	}

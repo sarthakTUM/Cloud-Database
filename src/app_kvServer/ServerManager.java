@@ -7,7 +7,7 @@ public class ServerManager {
 	public static void main(String[] args) {
 		
 		ServerSystem.setRunning(true);
-		// TODO Auto-generated method stub
+		
 		System.out.println(LOG + "initializing server...");
 		//KVServer kvServer = new KVServer((int)Integer.valueOf(args[0]), (int)Integer.valueOf(args[1]), args[2]);
 		KVServer kvServer = new KVServer(1234, 10, "LIFO");
