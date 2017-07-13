@@ -1,5 +1,6 @@
+# LATEST CODE IN BRANCH: DEV/SARTHAK-FINAL
+# WORK IN PROGRESS
 Cloud-Database
-the latest code is in dev/sarthak-final
 
 this is a highly available, replicated and scalable Distributed Key-Value Store.
 The system is still under development
